@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>GemCAD Visualizer | Ginny's Gemstones</title>
+  <meta name="description" content="Interactive 3D GemCAD gemstone visualizer. Rotate, inspect, and analyze faceting of precision cut gemstones.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23132f2c' d='M32 3 55 19 47 51 32 61 17 51 9 19z'/%3E%3Cpath fill='none' stroke='%23dfb96b' stroke-width='3' d='m9 19 23 42 23-42H9Zm0 0 23 12 23-12M32 3v58'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Italiana&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="visualizer-styles.css">
+</head>
+<body>
+  <header class="nav">
+    <a class="brand" href="index.html" aria-label="Ginny's Gemstones home"><span class="gem-mark">◆</span><span>GINNY'S<br><small>GEMSTONES</small></span></a>
+    <h1>GemCAD Visualizer</h1>
+    <a class="nav-back" href="index.html">← Back to Gallery</a>
+  </header>
+
+  <main class="visualizer-container">
+    <section class="viewer-section">
+      <div class="canvas-wrapper">
+        <canvas id="gem-canvas"></canvas>
+        <div class="loading-message" id="loading">
+          <p>Preparing visualizer...</p>
+        </div>
+      </div>
+      
+      <div class="controls">
+        <div class="control-group">
+          <label for="file-upload">Load GemCAD File:</label>
+          <input type="file" id="file-upload" accept=".gem,.txt,.csv" aria-label="Upload gemcad file">
+          <p class="hint">Upload a .gem, .txt, or .csv file with gemcad faceting data</p>
+        </div>
+
+        <div class="control-group">
+          <label for="gem-select">Or select from catalog:</label>
+          <select id="gem-select" aria-label="Select gemstone from catalog">
+            <option value="">Choose a stone...</option>
+            <option value="emerald-001">Columbian Emerald - 12.4ct</option>
+            <option value="sapphire-001">Ceylon Sapphire - 8.7ct</option>
+            <option value="diamond-001">Champagne Diamond - 5.2ct</option>
+            <option value="ruby-001">Burmese Ruby - 3.5ct</option>
+            <option value="topaz-001">Imperial Topaz - 9.1ct</option>
+            <option value="aquamarine-001">Aquamarine - 15.3ct</option>
+          </select>
+        </div>
+
+        <fieldset class="control-group">
+          <legend>Display Options</legend>
+          <div class="checkbox-group">
+            <label><input type="checkbox" id="show-facets" checked> Show Facets</label>
+            <label><input type="checkbox" id="show-edges" checked> Show Edges</label>
+            <label><input type="checkbox" id="show-measurements"> Show Measurements</label>
+            <label><input type="checkbox" id="show-angles"> Show Angles</label>
+          </div>
+        </fieldset>
+
+        <fieldset class="control-group">
+          <legend>Lighting</legend>
+          <div class="slider-group">
+            <label for="brightness">Brightness: <span id="brightness-value">100</span>%</label>
+            <input type="range" id="brightness" min="0" max="200" value="100" aria-label="Adjust brightness">
+          </div>
+          <div class="slider-group">
+            <label for="rotation-speed">Auto Rotation Speed:</label>
+            <input type="range" id="rotation-speed" min="0" max="100" value="0" aria-label="Adjust rotation speed">
+          </div>
+        </fieldset>
+
+        <div class="control-group">
+          <button id="reset-view" class="button-secondary">Reset View</button>
+          <button id="download-data" class="button-secondary">Download Specs</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="info-section">
+      <div class="info-panel">
+        <h2>Stone Information</h2>
+        <div id="stone-info" class="info-content">
+          <p class="placeholder">Select a stone to view its specifications and facet data.</p>
+        </div>
+      </div>
+
+      <div class="info-panel">
+        <h2>Facet Breakdown</h2>
+        <div id="facet-data" class="info-content">
+          <p class="placeholder">Facet information will appear here when a stone is loaded.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a class="brand" href="index.html"><span class="gem-mark">◆</span><span>GINNY'S<br><small>GEMSTONES</small></span></a>
+    <p>Interactive GemCAD Visualizer</p>
+    <p>© 2026 Ginny's Gemstones</p>
+  </footer>
+
+  <!-- Three.js will be added for 3D rendering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="visualizer.js"></script>
+</body>
+</html>

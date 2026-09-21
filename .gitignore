@@ -1,0 +1,31 @@
+# Environment
+.env
+.env.local
+.env*.local
+
+# Node/Package managers
+node_modules/
+package-lock.json
+yarn.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build outputs
+dist/
+build/
+out/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+temp/
+tmp/
+*.temp
