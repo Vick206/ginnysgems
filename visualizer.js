@@ -522,21 +522,32 @@ class GemVisualizer {
 
 // Wait for THREE.js to load before initializing
 function initVisualizer() {
+  console.log('[GemVisualizer] Checking THREE...');
   if (typeof THREE === 'undefined') {
     // THREE not loaded yet, try again
+    console.log('[GemVisualizer] THREE not ready, retrying...');
     setTimeout(initVisualizer, 50);
     return;
   }
 
+  console.log('[GemVisualizer] THREE loaded, finding canvas...');
   const canvas = document.querySelector('#gem-canvas');
   if (!canvas) {
-    console.error('Canvas not found');
+    console.error('[GemVisualizer] Canvas not found');
     return;
   }
 
-  const visualizer = new GemVisualizer(canvas);
+  console.log('[GemVisualizer] Canvas found, creating visualizer...');
+  try {
+    const visualizer = new GemVisualizer(canvas);
+    console.log('[GemVisualizer] Visualizer created successfully');
+  } catch (e) {
+    console.error('[GemVisualizer] Error creating visualizer:', e);
+    return;
+  }
   
   // Hide loading message
+  console.log('[GemVisualizer] Hiding loading message...');
   const loading = document.querySelector('#loading');
   if (loading) loading.style.display = 'none';
 
