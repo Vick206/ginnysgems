@@ -520,7 +520,14 @@ class GemVisualizer {
 
 // ==================== Event Listeners ====================
 
-document.addEventListener('DOMContentLoaded', () => {
+// Wait for THREE.js to load before initializing
+function initVisualizer() {
+  if (typeof THREE === 'undefined') {
+    // THREE not loaded yet, try again
+    setTimeout(initVisualizer, 50);
+    return;
+  }
+
   const canvas = document.querySelector('#gem-canvas');
   if (!canvas) {
     console.error('Canvas not found');
@@ -645,4 +652,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   visualizer.updateParameterControls();
-});
+}
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initVisualizer);
+} else {
+  // DOM is already loaded
+  initVisualizer();
+}
