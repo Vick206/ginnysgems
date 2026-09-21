@@ -1,343 +1,198 @@
-// GemCAD Visualizer - Interactive Gem Cut Builder with Three.js
-class GemCut {
-  constructor(name, baseParams) {
-    this.name = name;
-    this.baseParams = baseParams;
+// Ginnysgems GemCAD Visualizer - Refactored with Proper Geometry
+// Using parametric generation and optical properties
+
+// Optical properties for different gemstones
+// IOR: Refractive Index, Dispersion: Chromatic aberration
+const GEM_MATERIALS = {
+  diamond: {
+    label: 'Diamond',
+    color: 0xffffff,
+    ior: 2.417,
+    dispersion: 0.044,
+    absorption: 0,
+  },
+  sapphire: {
+    label: 'Blue Sapphire',
+    color: 0x5987f2,
+    ior: 1.766,
+    dispersion: 0.018,
+    absorption: 0.08,
+  },
+  ruby: {
+    label: 'Ruby',
+    color: 0xff599e,
+    ior: 1.766,
+    dispersion: 0.018,
+    absorption: 0.08,
+  },
+  emerald: {
+    label: 'Emerald',
+    color: 0x50c878,
+    ior: 1.576,
+    dispersion: 0.014,
+    absorption: 0.12,
+  },
+  quartz: {
+    label: 'Crystal Quartz',
+    color: 0xf0f8ff,
+    ior: 1.544,
+    dispersion: 0.013,
+    absorption: 0,
+  },
+  citrine: {
+    label: 'Citrine',
+    color: 0xffe07a,
+    ior: 1.544,
+    dispersion: 0.013,
+    absorption: 0.06,
+  },
+  amethyst: {
+    label: 'Amethyst',
+    color: 0xc994e6,
+    ior: 1.544,
+    dispersion: 0.013,
+    absorption: 0.06,
+  },
+  tourmaline: {
+    label: 'Tourmaline',
+    color: 0x354e3f,
+    ior: 1.62,
+    dispersion: 0.017,
+    absorption: 0.15,
+  },
+};
+
+// ==================== Geometry Generators ====================
+
+class GeometryGenerator {
+  static latheProfile(points, segments = 64, phiStart = 0, phiLength = Math.PI * 2) {
+    /**
+     * Creates a 3D geometry by rotating a 2D profile around the Y axis.
+     * Points: array of [radius, height] pairs
+     * Used for: Brilliant, Oval, Marquise, Pear cuts
+     */
+    const geometry = new THREE.LatheGeometry(
+      points.map(([x, y]) => new THREE.Vector2(x, y)),
+      segments,
+      phiStart,
+      phiLength
+    );
+    geometry.computeVertexNormals();
+    return geometry;
   }
 
-  generateGeometry(params) {
-    return new THREE.BufferGeometry();
-  }
-}
+  static brilliantProfile(crownAngle, pavilionAngle) {
+    /**
+     * Creates a 2D profile for a brilliant cut gem
+     * Angles in degrees, 0-90
+     */
+    const crownRad = (crownAngle * Math.PI) / 180;
+    const pavilionRad = (pavilionAngle * Math.PI) / 180;
 
-class BrilliantCut extends GemCut {
-  generateGeometry(params) {
-    const crownAngle = params.crownAngle || 34;
-    const pavilionAngle = params.pavilionAngle || 40.8;
-    const crownFacets = params.crownFacets || 8;
-    const pavilionFacets = params.pavilionFacets || 8;
-    
-    const vertices = [];
-    const indices = [];
-
-    vertices.push(0, 1, 0);
-    const tableIndex = 0;
-
-    const crownRadius = Math.sin((crownAngle * Math.PI) / 180);
-    const crownHeight = Math.cos((crownAngle * Math.PI) / 180) * 0.6;
-    
-    for (let i = 0; i < crownFacets; i++) {
-      const angle = (i / crownFacets) * Math.PI * 2;
-      vertices.push(
-        Math.cos(angle) * crownRadius * 0.8,
-        crownHeight,
-        Math.sin(angle) * crownRadius * 0.8
-      );
-    }
-
+    const table = 0.15;
+    const crownHeight = Math.cos(crownRad) * 0.5;
     const girdleRadius = 1;
-    for (let i = 0; i < crownFacets; i++) {
-      const angle = (i / crownFacets) * Math.PI * 2;
-      vertices.push(
-        Math.cos(angle) * girdleRadius,
-        0,
-        Math.sin(angle) * girdleRadius
-      );
-    }
+    const pavilionHeight = -Math.cos(pavilionRad) * 0.65;
 
-    const pavilionHeight = -Math.cos((pavilionAngle * Math.PI) / 180) * 0.8;
-    for (let i = 0; i < pavilionFacets; i++) {
-      const angle = (i / pavilionFacets) * Math.PI * 2;
-      vertices.push(
-        Math.cos(angle) * girdleRadius * 0.9,
-        pavilionHeight,
-        Math.sin(angle) * girdleRadius * 0.9
-      );
-    }
-
-    vertices.push(0, pavilionHeight - 0.4, 0);
-    const culetIndex = vertices.length / 3 - 1;
-
-    const crownStart = 1;
-    const girdleStart = crownStart + crownFacets;
-    const pavilionStart = girdleStart + crownFacets;
-
-    for (let i = 0; i < crownFacets; i++) {
-      const next = (i + 1) % crownFacets;
-      indices.push(tableIndex, crownStart + i, crownStart + next);
-      indices.push(crownStart + i, girdleStart + i, crownStart + next);
-      indices.push(crownStart + next, girdleStart + i, girdleStart + next);
-    }
-
-    for (let i = 0; i < pavilionFacets; i++) {
-      const next = (i + 1) % pavilionFacets;
-      indices.push(girdleStart + i, pavilionStart + i, girdleStart + next);
-      indices.push(girdleStart + next, pavilionStart + i, pavilionStart + next);
-      indices.push(pavilionStart + i, culetIndex, pavilionStart + next);
-    }
-
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
-    geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indices), 1));
-    geometry.computeVertexNormals();
-
-    return geometry;
+    return [
+      [0, pavilionHeight], // Culet (bottom point)
+      [girdleRadius * 0.7, pavilionHeight * 0.5], // Pavilion facet
+      [girdleRadius, 0], // Girdle
+      [girdleRadius * 0.8, crownHeight * 0.6], // Crown facet
+      [table, crownHeight],
+      [0, crownHeight + 0.1], // Table (flat top)
+    ];
   }
-}
 
-class EmeraldCut extends GemCut {
-  generateGeometry(params) {
-    const stepsPerSide = params.facetsPerSide || 3;
-    const length = 1.2;
-    const width = 0.8;
-    const crownHeight = 0.4;
-    const pavilionHeight = -0.5;
+  static ovalProfile(lengthRatio = 1.3) {
+    /**
+     * Creates an oval/elliptical profile
+     */
+    const points = [];
+    const segments = 16;
+    for (let i = 0; i <= segments; i++) {
+      const t = i / segments;
+      const angle = t * Math.PI;
+      const y = Math.cos(angle) * 0.4;
+      const radius = Math.sin(angle) * (1 + (lengthRatio - 1) * Math.sin(angle * 0.5));
+      points.push([radius, y]);
+    }
+    return points;
+  }
 
+  static marquiseProfile() {
+    /**
+     * Creates a marquise (boat-shaped) profile
+     */
+    const points = [];
+    for (let i = 0; i <= 20; i++) {
+      const t = i / 20;
+      const angle = t * Math.PI;
+      const y = Math.cos(angle) * 0.4;
+      const r = Math.sin(angle) * (1.5 * Math.sin(angle * 0.5));
+      points.push([Math.max(0, r), y]);
+    }
+    return points;
+  }
+
+  static pearProfile() {
+    /**
+     * Creates a pear-shaped profile
+     */
+    const points = [];
+    for (let i = 0; i <= 24; i++) {
+      const t = i / 24;
+      const angle = t * Math.PI;
+      const y = Math.cos(angle) * 0.4;
+      const baseRadius = Math.sin(angle);
+      const pear = 1 + 0.4 * Math.sin(angle * 0.5);
+      const r = baseRadius * pear;
+      points.push([Math.max(0, r), y]);
+    }
+    return points;
+  }
+
+  static stepCutGeometry(facetsPerSide = 3, width = 0.8, length = 1.2) {
+    /**
+     * Creates a step-cut gem (Emerald, Asscher, Cushion)
+     * Uses rectangular layers with connecting facets
+     */
     const vertices = [];
     const indices = [];
-
-    // Table (top)
-    const tableStart = vertices.length / 3;
-    vertices.push(-width / 4, crownHeight, -length / 4);
-    vertices.push(width / 4, crownHeight, -length / 4);
-    vertices.push(width / 4, crownHeight, length / 4);
-    vertices.push(-width / 4, crownHeight, length / 4);
-
-    // Crown steps (moving down and out)
-    const crownStart = vertices.length / 3;
-    for (let step = 0; step < stepsPerSide; step++) {
-      const t = (step + 1) / (stepsPerSide + 1);
-      const x = (width / 2) * t;
-      const z = (length / 2) * t;
-      const y = crownHeight - t * (crownHeight - 0.02);
-      
-      vertices.push(-x, y, -z);
-      vertices.push(x, y, -z);
-      vertices.push(x, y, z);
-      vertices.push(-x, y, z);
-    }
-
-    // Girdle
-    const girdleStart = vertices.length / 3;
-    vertices.push(-width / 2, 0, -length / 2);
-    vertices.push(width / 2, 0, -length / 2);
-    vertices.push(width / 2, 0, length / 2);
-    vertices.push(-width / 2, 0, length / 2);
-
-    // Pavilion steps (moving down and in)
-    const pavilionStart = vertices.length / 3;
-    for (let step = 0; step < stepsPerSide; step++) {
-      const t = (step + 1) / (stepsPerSide + 1);
-      const x = (width / 2) * (1 - t);
-      const z = (length / 2) * (1 - t);
-      const y = 0 + t * pavilionHeight;
-      
-      vertices.push(-x, y, -z);
-      vertices.push(x, y, -z);
-      vertices.push(x, y, z);
-      vertices.push(-x, y, z);
-    }
-
-    // Culet (bottom)
-    const culetStart = vertices.length / 3;
-    vertices.push(-width / 8, pavilionHeight, -length / 8);
-    vertices.push(width / 8, pavilionHeight, -length / 8);
-    vertices.push(width / 8, pavilionHeight, length / 8);
-    vertices.push(-width / 8, pavilionHeight, length / 8);
-
-    // Face table
-    indices.push(tableStart, tableStart + 1, tableStart + 2);
-    indices.push(tableStart, tableStart + 2, tableStart + 3);
-
-    // Face culet
-    indices.push(culetStart, culetStart + 2, culetStart + 1);
-    indices.push(culetStart, culetStart + 3, culetStart + 2);
-
-    // Connect all steps with quads
-    const allSteps = [tableStart, crownStart, girdleStart, pavilionStart, culetStart];
-    for (let s = 0; s < allSteps.length - 1; s++) {
-      const step1Idx = allSteps[s];
-      const step2Idx = allSteps[s + 1];
-      
-      for (let i = 0; i < 4; i++) {
-        const v1 = step1Idx + i;
-        const v2 = step1Idx + (i + 1) % 4;
-        const v3 = step2Idx + (i + 1) % 4;
-        const v4 = step2Idx + i;
-
-        indices.push(v1, v2, v3);
-        indices.push(v1, v3, v4);
-      }
-    }
-
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
-    geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indices), 1));
-    geometry.computeVertexNormals();
-
-    return geometry;
-  }
-}
-
-class CushionCut extends GemCut {
-  generateGeometry(params) {
-    const facetsPerSide = params.facetsPerSide || 4;
-    const vertices = [];
-    const indices = [];
-
-    const width = 1.0;
-    const length = 1.0;
     const crownHeight = 0.35;
     const pavilionHeight = -0.45;
-    const cornerRadius = 0.2;
 
-    // Helper: create a rounded square at a given height and size
-    const addRoundedSquareLayer = (y, sizeX, sizeZ, segments) => {
+    // Helper: create rectangular layer
+    const addLayer = (y, sx, sz) => {
       const startIdx = vertices.length / 3;
-      const halfX = sizeX / 2;
-      const halfZ = sizeZ / 2;
-      const cornerSegs = Math.ceil(segments / 4);
-      
-      let vertCount = 0;
-      
-      // Right edge (with corner at end)
-      for (let i = 0; i <= cornerSegs; i++) {
-        const t = i / cornerSegs;
-        const x = halfX - cornerRadius + cornerRadius * Math.cos(t * Math.PI / 2);
-        const z = -halfZ + cornerRadius * Math.sin(t * Math.PI / 2);
-        vertices.push(x, y, z);
-        vertCount++;
-      }
-      
-      // Bottom edge (with corner at end)
-      for (let i = 0; i <= cornerSegs; i++) {
-        const t = i / cornerSegs;
-        const x = halfX - cornerRadius * Math.sin(t * Math.PI / 2);
-        const z = -halfZ + cornerRadius + cornerRadius * Math.cos(t * Math.PI / 2);
-        vertices.push(x, y, z);
-        vertCount++;
-      }
-      
-      // Left edge (with corner at end)
-      for (let i = 0; i <= cornerSegs; i++) {
-        const t = i / cornerSegs;
-        const x = -halfX + cornerRadius - cornerRadius * Math.cos(t * Math.PI / 2);
-        const z = halfZ - cornerRadius * Math.sin(t * Math.PI / 2);
-        vertices.push(x, y, z);
-        vertCount++;
-      }
-      
-      // Top edge (with corner at end)
-      for (let i = 0; i <= cornerSegs; i++) {
-        const t = i / cornerSegs;
-        const x = -halfX + cornerRadius * Math.sin(t * Math.PI / 2);
-        const z = halfZ - cornerRadius - cornerRadius * Math.cos(t * Math.PI / 2);
-        vertices.push(x, y, z);
-        vertCount++;
-      }
-      
-      return { startIdx, vertCount };
+      vertices.push(-sx, y, -sz, sx, y, -sz, sx, y, sz, -sx, y, sz);
+      return { startIdx, count: 4 };
     };
 
-    // Table (top)
-    const tableLayer = addRoundedSquareLayer(crownHeight, width * 0.4, length * 0.4, 4);
-
-    // Crown steps
-    const crownLayers = [];
-    for (let step = 1; step <= facetsPerSide; step++) {
-      const t = step / (facetsPerSide + 1);
-      const size = width * (0.4 + 0.6 * t);
-      const y = crownHeight - t * (crownHeight - 0.01);
-      crownLayers.push(addRoundedSquareLayer(y, size, size, 8));
+    // Build layers
+    const layers = [];
+    layers.push(addLayer(crownHeight, width * 0.2, length * 0.2)); // Table
+    for (let i = 1; i <= facetsPerSide; i++) {
+      const t = i / (facetsPerSide + 1);
+      layers.push(addLayer(crownHeight - t * (crownHeight - 0.01), width * (0.2 + 0.3 * t), length * (0.2 + 0.3 * t)));
     }
-
-    // Girdle
-    const girdleLayer = addRoundedSquareLayer(0, width, length, 8);
-
-    // Pavilion steps
-    const pavilionLayers = [];
-    for (let step = 1; step <= facetsPerSide; step++) {
-      const t = step / (facetsPerSide + 1);
-      const size = width * (1 - 0.4 * t);
-      const y = 0 + t * pavilionHeight;
-      pavilionLayers.push(addRoundedSquareLayer(y, size, size, 8));
+    layers.push(addLayer(0, width, length)); // Girdle
+    for (let i = 1; i <= facetsPerSide; i++) {
+      const t = i / (facetsPerSide + 1);
+      layers.push(addLayer(-t * pavilionHeight, width * (1 - 0.4 * t), length * (1 - 0.4 * t)));
     }
+    layers.push(addLayer(pavilionHeight, width * 0.1, length * 0.1)); // Culet
 
-    // Culet (bottom)
-    const culetLayer = addRoundedSquareLayer(pavilionHeight, width * 0.2, length * 0.2, 4);
-
-    // Helper: connect two layers with quads
-    const connectLayers = (layer1, layer2) => {
-      const vertCount = Math.min(layer1.vertCount, layer2.vertCount);
-      for (let i = 0; i < vertCount; i++) {
-        const v1 = layer1.startIdx + i;
-        const v2 = layer1.startIdx + (i + 1) % vertCount;
-        const v3 = layer2.startIdx + (i + 1) % vertCount;
-        const v4 = layer2.startIdx + i;
-
-        indices.push(v1, v2, v3);
-        indices.push(v1, v3, v4);
-      }
-    };
-
-    // Connect all layers
-    connectLayers(tableLayer, crownLayers[0]);
-    for (let i = 0; i < crownLayers.length - 1; i++) {
-      connectLayers(crownLayers[i], crownLayers[i + 1]);
-    }
-    connectLayers(crownLayers[crownLayers.length - 1], girdleLayer);
-
-    connectLayers(girdleLayer, pavilionLayers[0]);
-    for (let i = 0; i < pavilionLayers.length - 1; i++) {
-      connectLayers(pavilionLayers[i], pavilionLayers[i + 1]);
-    }
-    connectLayers(pavilionLayers[pavilionLayers.length - 1], culetLayer);
-
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
-    geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indices), 1));
-    geometry.computeVertexNormals();
-
-    return geometry;
-  }
-}
-
-class OvalCut extends GemCut {
-  generateGeometry(params) {
-    const segments = params.segments || 32;
-    const lengthRatio = 1.3;
-    const depth = 0.7;
-
-    const vertices = [];
-    const indices = [];
-
-    const lat = 8;
-    const lon = segments;
-
-    for (let i = 0; i <= lat; i++) {
-      const phi = (i / lat) * Math.PI;
-      const y = depth * Math.cos(phi) * 0.5;
-      const radius = Math.sin(phi);
-
-      for (let j = 0; j <= lon; j++) {
-        const theta = (j / lon) * Math.PI * 2;
-        const x = Math.cos(theta) * radius;
-        const z = Math.sin(theta) * radius * lengthRatio;
-
-        vertices.push(x, y, z);
-      }
-    }
-
-    const vertsPerLat = lon + 1;
-    for (let i = 0; i < lat; i++) {
-      for (let j = 0; j < lon; j++) {
-        const a = i * vertsPerLat + j;
-        const b = i * vertsPerLat + (j + 1);
-        const c = (i + 1) * vertsPerLat + (j + 1);
-        const d = (i + 1) * vertsPerLat + j;
-
-        indices.push(a, b, c);
-        indices.push(a, c, d);
+    // Connect layers with quads
+    for (let l = 0; l < layers.length - 1; l++) {
+      const curr = layers[l];
+      const next = layers[l + 1];
+      for (let i = 0; i < 4; i++) {
+        const a = curr.startIdx + i;
+        const b = curr.startIdx + (i + 1) % 4;
+        const c = next.startIdx + (i + 1) % 4;
+        const d = next.startIdx + i;
+        indices.push(a, b, c, a, c, d);
       }
     }
 
@@ -345,103 +200,12 @@ class OvalCut extends GemCut {
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
     geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indices), 1));
     geometry.computeVertexNormals();
-
     return geometry;
   }
 }
 
-class RadiantCut extends GemCut {
-  generateGeometry(params) {
-    const facets = params.facetRings || 4;
-    const vertices = [];
-    const indices = [];
-    
-    vertices.push(0, 1, 0);
-    let vertexIndex = 1;
-    const ringStartIndices = [];
+// ==================== GemVisualizer ====================
 
-    // Crown rings
-    for (let ring = 1; ring <= facets; ring++) {
-      const t = ring / facets;
-      const radius = Math.sin(t * Math.PI * 0.5);
-      const height = Math.cos(t * Math.PI * 0.5) * 0.6;
-      const facetsInRing = 8 + ring * 2;
-
-      ringStartIndices.push(vertexIndex);
-      for (let i = 0; i < facetsInRing; i++) {
-        const angle = (i / facetsInRing) * Math.PI * 2;
-        vertices.push(Math.cos(angle) * radius, height, Math.sin(angle) * radius);
-      }
-      vertexIndex += facetsInRing;
-    }
-
-    // Pavilion rings
-    const pavilionStartIndices = [];
-    for (let ring = 1; ring <= facets; ring++) {
-      const t = ring / facets;
-      const radius = Math.sin(t * Math.PI * 0.5);
-      const height = -Math.cos(t * Math.PI * 0.5) * 0.8;
-      const facetsInRing = 8 + ring * 2;
-
-      pavilionStartIndices.push(vertexIndex);
-      for (let i = 0; i < facetsInRing; i++) {
-        const angle = (i / facetsInRing) * Math.PI * 2;
-        vertices.push(Math.cos(angle) * radius, height, Math.sin(angle) * radius);
-      }
-      vertexIndex += facetsInRing;
-    }
-
-    const culetIndex = vertexIndex;
-    vertices.push(0, -1.2, 0);
-
-    // Create crown facet faces
-    for (let ring = 0; ring < ringStartIndices.length; ring++) {
-      const start = ringStartIndices[ring];
-      const facetsInRing = 8 + (ring + 1) * 2;
-
-      for (let i = 0; i < facetsInRing; i++) {
-        const next = (i + 1) % facetsInRing;
-        if (ring === 0) {
-          // Connect to table
-          indices.push(0, start + i, start + next);
-        } else {
-          // Connect to previous ring
-          const prevStart = ringStartIndices[ring - 1];
-          const prevFacetsInRing = 8 + ring * 2;
-          indices.push(start + i, prevStart + (i % prevFacetsInRing), start + next);
-        }
-      }
-    }
-
-    // Create pavilion facet faces
-    for (let ring = 0; ring < pavilionStartIndices.length; ring++) {
-      const start = pavilionStartIndices[ring];
-      const facetsInRing = 8 + (ring + 1) * 2;
-
-      for (let i = 0; i < facetsInRing; i++) {
-        const next = (i + 1) % facetsInRing;
-        if (ring === pavilionStartIndices.length - 1) {
-          // Connect to culet
-          indices.push(start + i, culetIndex, start + next);
-        } else {
-          // Connect to next ring
-          const nextStart = pavilionStartIndices[ring + 1];
-          const nextFacetsInRing = 8 + (ring + 2) * 2;
-          indices.push(start + i, start + next, nextStart + (i % nextFacetsInRing));
-        }
-      }
-    }
-
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
-    geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indices), 1));
-    geometry.computeVertexNormals();
-
-    return geometry;
-  }
-}
-
-// Main Visualizer Class
 class GemVisualizer {
   constructor(canvasElement) {
     this.canvas = canvasElement;
@@ -452,49 +216,85 @@ class GemVisualizer {
     this.autoRotate = false;
     this.rotationSpeed = 0;
     this.currentCut = 'brilliant';
+    this.currentMaterial = 'diamond';
     this.currentParams = {};
-    this.gemColor = 0x82c7a3;
     this.wireframeGroup = null;
-    this.originalLightIntensities = null;
+    this.originalLightIntensities = new Map();
 
     this.cuts = {
-      brilliant: new BrilliantCut('Brilliant', {}),
-      emerald: new EmeraldCut('Emerald', {}),
-      cushion: new CushionCut('Cushion', {}),
-      oval: new OvalCut('Oval', {}),
-      radiant: new RadiantCut('Radiant', {}),
-      asscher: new EmeraldCut('Asscher', {}),
-      marquise: new OvalCut('Marquise', {}),
-      pear: new OvalCut('Pear', {}),
+      brilliant: {
+        name: 'Brilliant',
+        generate: (params) => GeometryGenerator.latheProfile(
+          GeometryGenerator.brilliantProfile(params.crownAngle || 34, params.pavilionAngle || 40.8),
+          params.facets || 64
+        ),
+      },
+      emerald: {
+        name: 'Emerald',
+        generate: (params) => GeometryGenerator.stepCutGeometry(params.facetsPerSide || 3, 0.8, 1.2),
+      },
+      cushion: {
+        name: 'Cushion',
+        generate: (params) => GeometryGenerator.stepCutGeometry(params.facetsPerSide || 3, 1.0, 1.0),
+      },
+      oval: {
+        name: 'Oval',
+        generate: (params) => GeometryGenerator.latheProfile(
+          GeometryGenerator.ovalProfile(params.lengthRatio || 1.3),
+          params.segments || 64
+        ),
+      },
+      radiant: {
+        name: 'Radiant',
+        generate: (params) => GeometryGenerator.stepCutGeometry(params.facetRings || 3, 0.9, 0.9),
+      },
+      asscher: {
+        name: 'Asscher',
+        generate: (params) => GeometryGenerator.stepCutGeometry(params.facetsPerSide || 4, 0.7, 0.7),
+      },
+      marquise: {
+        name: 'Marquise',
+        generate: (params) => GeometryGenerator.latheProfile(
+          GeometryGenerator.marquiseProfile(),
+          params.segments || 64
+        ),
+      },
+      pear: {
+        name: 'Pear',
+        generate: (params) => GeometryGenerator.latheProfile(
+          GeometryGenerator.pearProfile(),
+          params.segments || 64
+        ),
+      },
     };
 
     this.paramDefinitions = {
       brilliant: [
         { name: 'crownAngle', label: 'Crown Angle', min: 25, max: 45, step: 1, default: 34, unit: '°' },
         { name: 'pavilionAngle', label: 'Pavilion Angle', min: 35, max: 50, step: 1, default: 40.8, unit: '°' },
-        { name: 'crownFacets', label: 'Crown Facets', min: 4, max: 16, step: 1, default: 8 },
-        { name: 'pavilionFacets', label: 'Pavilion Facets', min: 4, max: 16, step: 1, default: 8 },
+        { name: 'facets', label: 'Facet Count', min: 8, max: 96, step: 4, default: 64 },
       ],
       emerald: [
         { name: 'facetsPerSide', label: 'Steps per Side', min: 2, max: 6, step: 1, default: 3 },
       ],
       cushion: [
-        { name: 'facetsPerSide', label: 'Facets per Side', min: 3, max: 8, step: 1, default: 4 },
+        { name: 'facetsPerSide', label: 'Facets per Side', min: 3, max: 8, step: 1, default: 3 },
       ],
       oval: [
-        { name: 'segments', label: 'Segments', min: 16, max: 64, step: 4, default: 32 },
+        { name: 'segments', label: 'Segments', min: 16, max: 96, step: 4, default: 64 },
+        { name: 'lengthRatio', label: 'Length Ratio', min: 1.1, max: 2.0, step: 0.1, default: 1.3 },
       ],
       radiant: [
-        { name: 'facetRings', label: 'Facet Rings', min: 2, max: 6, step: 1, default: 4 },
+        { name: 'facetRings', label: 'Facet Rings', min: 2, max: 6, step: 1, default: 3 },
       ],
       asscher: [
-        { name: 'facetsPerSide', label: 'Steps per Side', min: 2, max: 5, step: 1, default: 3 },
+        { name: 'facetsPerSide', label: 'Steps per Side', min: 2, max: 5, step: 1, default: 4 },
       ],
       marquise: [
-        { name: 'segments', label: 'Segments', min: 16, max: 64, step: 4, default: 32 },
+        { name: 'segments', label: 'Segments', min: 16, max: 96, step: 4, default: 64 },
       ],
       pear: [
-        { name: 'segments', label: 'Segments', min: 16, max: 64, step: 4, default: 32 },
+        { name: 'segments', label: 'Segments', min: 16, max: 96, step: 4, default: 64 },
       ],
     };
 
@@ -504,18 +304,13 @@ class GemVisualizer {
   initScene() {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x1a2826);
-    this.scene.fog = new THREE.Fog(0x1a2826, 100, 1000);
 
     const width = this.canvas.clientWidth;
     const height = this.canvas.clientHeight;
     this.camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
     this.camera.position.set(0, 0, 4);
 
-    this.renderer = new THREE.WebGLRenderer({ 
-      canvas: this.canvas, 
-      antialias: true, 
-      alpha: true 
-    });
+    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
     this.renderer.setSize(width, height);
     this.renderer.setPixelRatio(window.devicePixelRatio);
 
@@ -525,15 +320,16 @@ class GemVisualizer {
     const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.9);
     directionalLight1.position.set(5, 5, 5);
     this.scene.add(directionalLight1);
+    this.originalLightIntensities.set(directionalLight1, 0.9);
 
     const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
     directionalLight2.position.set(-3, -3, -3);
     this.scene.add(directionalLight2);
+    this.originalLightIntensities.set(directionalLight2, 0.4);
 
     this.setupControls();
+    this.generateGem(this.currentCut, {});
     this.animate();
-
-    window.addEventListener('resize', () => this.onWindowResize());
   }
 
   setupControls() {
@@ -549,10 +345,8 @@ class GemVisualizer {
       if (isDragging && this.gem) {
         const deltaX = e.clientX - previousMousePosition.x;
         const deltaY = e.clientY - previousMousePosition.y;
-
         this.gem.rotation.y += deltaX * 0.01;
         this.gem.rotation.x += deltaY * 0.01;
-
         previousMousePosition = { x: e.clientX, y: e.clientY };
       }
     });
@@ -573,208 +367,169 @@ class GemVisualizer {
       this.scene.remove(this.gem);
     }
 
-    const cut = this.cuts[cutName] || this.cuts.brilliant;
-    const geometry = cut.generateGeometry(params);
+    const cut = this.cuts[cutName];
+    if (!cut) return;
 
-    const material = new THREE.MeshStandardMaterial({
-      color: this.gemColor,
-      metalness: 0.15,
-      roughness: 0.35,
-      side: THREE.DoubleSide,
-      flatShading: true,
-    });
+    try {
+      const geometry = cut.generate(params);
+      const materialData = GEM_MATERIALS[this.currentMaterial] || GEM_MATERIALS.diamond;
 
-    this.gem = new THREE.Mesh(geometry, material);
-    this.scene.add(this.gem);
+      const material = new THREE.MeshStandardMaterial({
+        color: materialData.color,
+        metalness: 0.05,
+        roughness: 0.3,
+        flatShading: true,
+        side: THREE.DoubleSide,
+      });
 
-    if (document.querySelector('#show-wireframe')?.checked) {
-      this.updateWireframe();
+      this.gem = new THREE.Mesh(geometry, material);
+      this.scene.add(this.gem);
+      this.currentParams = params;
+
+      if (document.querySelector('#show-wireframe')?.checked) {
+        this.updateWireframe();
+      }
+    } catch (error) {
+      console.error(`Error generating ${cutName}:`, error);
     }
   }
 
   updateWireframe() {
     if (this.wireframeGroup && this.gem) {
       this.gem.remove(this.wireframeGroup);
+      this.wireframeGroup = null;
     }
 
     if (document.querySelector('#show-wireframe')?.checked && this.gem) {
-      const wireframe = new THREE.Mesh(
-        this.gem.geometry,
+      const wireframe = new THREE.LineSegments(
+        new THREE.EdgesGeometry(this.gem.geometry),
         new THREE.LineBasicMaterial({ color: 0xdfb96b, linewidth: 1 })
       );
-      this.wireframeGroup = wireframe;
       this.gem.add(wireframe);
+      this.wireframeGroup = wireframe;
     }
   }
 
-  updateGem(params) {
-    this.currentParams = params;
-    this.generateGem(this.currentCut, params);
-  }
-
-  animate() {
-    requestAnimationFrame(() => this.animate());
-
-    if (this.gem && this.autoRotate) {
-      this.gem.rotation.y += (this.rotationSpeed / 100) * 0.02;
+  updateBrightness() {
+    const slider = document.querySelector('#brightness-slider');
+    if (!slider) return;
+    const factor = parseFloat(slider.value);
+    for (const [light, original] of this.originalLightIntensities) {
+      light.intensity = original * factor;
     }
-
-    this.renderer.render(this.scene, this.camera);
   }
 
-  onWindowResize() {
-    const width = this.canvas.clientWidth;
-    const height = this.canvas.clientHeight;
-    this.camera.aspect = width / height;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(width, height);
-  }
+  updateParameterControls() {
+    const container = document.querySelector('#parameter-controls');
+    const paramDefs = this.paramDefinitions[this.currentCut] || [];
+    if (!container || !paramDefs.length) return;
 
-  resetView() {
-    if (this.gem) {
-      this.gem.rotation.set(0, 0, 0);
-    }
-    this.camera.position.set(0, 0, 4);
-  }
-
-  updateBrightness(value) {
-    const factor = value / 100;
-    // Store original intensities if not already stored
-    if (!this.originalLightIntensities) {
-      this.originalLightIntensities = new Map();
-      this.scene.children.forEach(child => {
-        if (child.isLight) {
-          this.originalLightIntensities.set(child, child.intensity);
-        }
-      });
-    }
-    
-    this.originalLightIntensities.forEach((originalIntensity, light) => {
-      light.intensity = originalIntensity * factor;
-    });
-  }
-}
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
-  const canvas = document.querySelector('#gem-canvas');
-  const loading = document.querySelector('#loading');
-
-  const visualizer = new GemVisualizer(canvas);
-  loading.style.display = 'none';
-
-  visualizer.generateGem('brilliant', visualizer.paramDefinitions.brilliant.reduce((acc, p) => {
-    acc[p.name] = p.default;
-    return acc;
-  }, {}));
-
-  document.querySelector('#cut-select').addEventListener('change', (e) => {
-    visualizer.currentCut = e.target.value;
-    updateParameterControls(visualizer);
-    const defaults = visualizer.paramDefinitions[e.target.value].reduce((acc, p) => {
-      acc[p.name] = p.default;
-      return acc;
-    }, {});
-    visualizer.updateGem(defaults);
-  });
-
-  // Initialize parameter controls for initial cut
-  updateParameterControls(visualizer);
-
-  function updateParameterControls(visualizer) {
-    const container = document.querySelector('#params-container');
-    const params = visualizer.paramDefinitions[visualizer.currentCut] || [];
-
-    container.innerHTML = params.map(p => `
-      <div class="slider-group">
-        <label for="param-${p.name}">
-          ${p.label}: <span id="value-${p.name}">${p.default}</span>${p.unit || ''}
-        </label>
-        <input type="range" id="param-${p.name}" 
-          min="${p.min}" max="${p.max}" step="${p.step}" 
-          value="${p.default}" aria-label="${p.label}">
+    container.innerHTML = paramDefs.map((def) => `
+      <div class="control-group">
+        <label>${def.label}</label>
+        <input type="range" class="param-slider" data-param="${def.name}"
+               min="${def.min}" max="${def.max}" step="${def.step}" value="${def.default}">
+        <span class="param-value">${def.default}${def.unit || ''}</span>
       </div>
     `).join('');
 
-    params.forEach(p => {
-      const slider = document.querySelector(`#param-${p.name}`);
-      const valueDisplay = document.querySelector(`#value-${p.name}`);
-      
+    container.querySelectorAll('.param-slider').forEach((slider) => {
       slider.addEventListener('input', (e) => {
-        const value = parseInt(e.target.value);
-        valueDisplay.textContent = value;
-        
-        const allParams = {};
-        params.forEach(param => {
-          allParams[param.name] = parseInt(document.querySelector(`#param-${param.name}`).value);
-        });
-        visualizer.updateGem(allParams);
+        const paramName = e.target.dataset.param;
+        const value = parseFloat(e.target.value);
+        const unit = paramDefs.find((p) => p.name === paramName)?.unit || '';
+        e.target.nextElementSibling.textContent = `${value}${unit}`;
+        this.currentParams[paramName] = value;
+        this.generateGem(this.currentCut, this.currentParams);
       });
     });
   }
 
-  document.querySelector('#show-wireframe').addEventListener('change', () => {
+  animate = () => {
+    if (this.autoRotate && this.gem) {
+      this.gem.rotation.z += this.rotationSpeed * 0.01;
+    }
+    this.renderer.render(this.scene, this.camera);
+    requestAnimationFrame(this.animate);
+  };
+}
+
+// ==================== Event Listeners ====================
+
+document.addEventListener('DOMContentLoaded', () => {
+  const canvas = document.querySelector('#gem-canvas');
+  if (!canvas) return;
+
+  const visualizer = new GemVisualizer(canvas);
+
+  // Cut selection
+  document.querySelector('#cut-select')?.addEventListener('change', (e) => {
+    visualizer.currentCut = e.target.value;
+    visualizer.generateGem(visualizer.currentCut, {});
+    visualizer.updateParameterControls();
+  });
+
+  // Material/gem selection
+  document.querySelector('#gem-select')?.addEventListener('change', (e) => {
+    visualizer.currentMaterial = e.target.value;
+    visualizer.generateGem(visualizer.currentCut, visualizer.currentParams);
+  });
+
+  // Wireframe toggle
+  document.querySelector('#show-wireframe')?.addEventListener('change', () => {
     visualizer.updateWireframe();
   });
 
-  document.querySelector('#brightness').addEventListener('input', (e) => {
-    document.querySelector('#brightness-value').textContent = e.target.value;
-    visualizer.updateBrightness(e.target.value);
+  // Brightness slider
+  document.querySelector('#brightness-slider')?.addEventListener('input', () => {
+    visualizer.updateBrightness();
   });
 
-  document.querySelector('#rotation-speed').addEventListener('input', (e) => {
-    visualizer.rotationSpeed = parseInt(e.target.value);
-    visualizer.autoRotate = parseInt(e.target.value) > 0;
+  // Auto-rotate
+  document.querySelector('#auto-rotate')?.addEventListener('change', (e) => {
+    visualizer.autoRotate = e.target.checked;
   });
 
-  document.querySelector('#reset-view').addEventListener('click', () => {
-    visualizer.resetView();
+  document.querySelector('#rotation-speed')?.addEventListener('input', (e) => {
+    visualizer.rotationSpeed = parseFloat(e.target.value);
   });
 
-  document.querySelector('#file-upload').addEventListener('change', (e) => {
-    if (e.target.files.length > 0) {
-      alert('GemCAD file upload: coming soon!');
+  // Reset view
+  document.querySelector('#reset-view')?.addEventListener('click', () => {
+    visualizer.camera.position.set(0, 0, 4);
+    if (visualizer.gem) {
+      visualizer.gem.rotation.set(0, 0, 0);
     }
   });
 
-  // Catalog stone selector - changes gem color based on selection
-  document.querySelector('#gem-select').addEventListener('change', (e) => {
-    if (e.target.value) {
-      const stoneColors = {
-        'emerald-001': 0x82c7a3,
-        'sapphire-001': 0x67bbca,
-        'diamond-001': 0xfff1c7,
-        'ruby-001': 0xe74c3c,
-        'topaz-001': 0xf5b041,
-        'aquamarine-001': 0x6dd5ed,
-      };
-      visualizer.gemColor = stoneColors[e.target.value] || 0x82c7a3;
-      visualizer.updateGem(visualizer.currentParams);
-    }
-  });
-
-  // Light rays toggle (placeholder for future enhancement)
-  document.querySelector('#show-light-rays').addEventListener('change', (e) => {
-    console.log('Light rays:', e.target.checked);
-    // Future implementation for light ray visualization
-  });
-
-  // Download specs button
-  document.querySelector('#download-data').addEventListener('click', () => {
-    const cutName = visualizer.currentCut;
-    const params = visualizer.currentParams;
-    const specs = {
-      cut: cutName,
-      parameters: params,
+  // Download specs
+  document.querySelector('#download-data')?.addEventListener('click', () => {
+    const data = {
+      cut: visualizer.currentCut,
+      material: visualizer.currentMaterial,
+      materialData: GEM_MATERIALS[visualizer.currentMaterial],
+      parameters: visualizer.currentParams,
       timestamp: new Date().toISOString(),
     };
-    const dataStr = JSON.stringify(specs, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `gem-${cutName}-${Date.now()}.json`;
-    link.click();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `gem-${visualizer.currentCut}-${Date.now()}.json`;
+    a.click();
     URL.revokeObjectURL(url);
   });
+
+  // File upload
+  document.querySelector('#gemcad-file')?.addEventListener('change', (e) => {
+    alert('GemCAD file import coming soon!');
+  });
+
+  document.querySelector('#show-light-rays')?.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      console.log('Light rays visualization: Feature in development');
+    }
+  });
+
+  visualizer.updateParameterControls();
 });
