@@ -410,17 +410,8 @@ class GemVisualizer {
     }
   }
 
-  updateBrightness() {
-    const slider = document.querySelector('#brightness-slider');
-    if (!slider) return;
-    const factor = parseFloat(slider.value);
-    for (const [light, original] of this.originalLightIntensities) {
-      light.intensity = original * factor;
-    }
-  }
-
   updateParameterControls() {
-    const container = document.querySelector('#parameter-controls');
+    const container = document.querySelector('#params-container');
     const paramDefs = this.paramDefinitions[this.currentCut] || [];
     if (!container || !paramDefs.length) return;
 
@@ -458,78 +449,127 @@ class GemVisualizer {
 
 document.addEventListener('DOMContentLoaded', () => {
   const canvas = document.querySelector('#gem-canvas');
-  if (!canvas) return;
+  if (!canvas) {
+    console.error('Canvas not found');
+    return;
+  }
 
   const visualizer = new GemVisualizer(canvas);
+  
+  // Hide loading message
+  const loading = document.querySelector('#loading');
+  if (loading) loading.style.display = 'none';
 
   // Cut selection
-  document.querySelector('#cut-select')?.addEventListener('change', (e) => {
-    visualizer.currentCut = e.target.value;
-    visualizer.generateGem(visualizer.currentCut, {});
-    visualizer.updateParameterControls();
-  });
+  const cutSelect = document.querySelector('#cut-select');
+  if (cutSelect) {
+    cutSelect.addEventListener('change', (e) => {
+      visualizer.currentCut = e.target.value;
+      visualizer.generateGem(visualizer.currentCut, {});
+      visualizer.updateParameterControls();
+    });
+  }
 
   // Material/gem selection
-  document.querySelector('#gem-select')?.addEventListener('change', (e) => {
-    visualizer.currentMaterial = e.target.value;
-    visualizer.generateGem(visualizer.currentCut, visualizer.currentParams);
-  });
+  const gemSelect = document.querySelector('#gem-select');
+  if (gemSelect) {
+    gemSelect.addEventListener('change', (e) => {
+      const materialMap = {
+        'emerald-001': 'emerald',
+        'sapphire-001': 'sapphire',
+        'diamond-001': 'diamond',
+        'ruby-001': 'ruby',
+        'topaz-001': 'quartz',
+        'aquamarine-001': 'sapphire',
+      };
+      visualizer.currentMaterial = materialMap[e.target.value] || 'diamond';
+      visualizer.generateGem(visualizer.currentCut, visualizer.currentParams);
+    });
+  }
 
   // Wireframe toggle
-  document.querySelector('#show-wireframe')?.addEventListener('change', () => {
-    visualizer.updateWireframe();
-  });
+  const wireframeCheckbox = document.querySelector('#show-wireframe');
+  if (wireframeCheckbox) {
+    wireframeCheckbox.addEventListener('change', () => {
+      visualizer.updateWireframe();
+    });
+  }
 
   // Brightness slider
-  document.querySelector('#brightness-slider')?.addEventListener('input', () => {
-    visualizer.updateBrightness();
-  });
+  const brightnessSlider = document.querySelector('#brightness');
+  if (brightnessSlider) {
+    brightnessSlider.addEventListener('input', (e) => {
+      const value = parseInt(e.target.value);
+      const brightnessValue = document.querySelector('#brightness-value');
+      if (brightnessValue) brightnessValue.textContent = value;
+      
+      // Update light intensity
+      const factor = value / 100;
+      for (const [light, original] of visualizer.originalLightIntensities) {
+        light.intensity = original * factor;
+      }
+    });
+  }
 
   // Auto-rotate
-  document.querySelector('#auto-rotate')?.addEventListener('change', (e) => {
-    visualizer.autoRotate = e.target.checked;
-  });
-
-  document.querySelector('#rotation-speed')?.addEventListener('input', (e) => {
-    visualizer.rotationSpeed = parseFloat(e.target.value);
-  });
+  const rotationSpeedSlider = document.querySelector('#rotation-speed');
+  if (rotationSpeedSlider) {
+    rotationSpeedSlider.addEventListener('input', (e) => {
+      const value = parseInt(e.target.value);
+      visualizer.autoRotate = value > 0;
+      visualizer.rotationSpeed = value;
+    });
+  }
 
   // Reset view
-  document.querySelector('#reset-view')?.addEventListener('click', () => {
-    visualizer.camera.position.set(0, 0, 4);
-    if (visualizer.gem) {
-      visualizer.gem.rotation.set(0, 0, 0);
-    }
-  });
+  const resetButton = document.querySelector('#reset-view');
+  if (resetButton) {
+    resetButton.addEventListener('click', () => {
+      visualizer.camera.position.set(0, 0, 4);
+      if (visualizer.gem) {
+        visualizer.gem.rotation.set(0, 0, 0);
+      }
+    });
+  }
 
   // Download specs
-  document.querySelector('#download-data')?.addEventListener('click', () => {
-    const data = {
-      cut: visualizer.currentCut,
-      material: visualizer.currentMaterial,
-      materialData: GEM_MATERIALS[visualizer.currentMaterial],
-      parameters: visualizer.currentParams,
-      timestamp: new Date().toISOString(),
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `gem-${visualizer.currentCut}-${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  });
+  const downloadButton = document.querySelector('#download-data');
+  if (downloadButton) {
+    downloadButton.addEventListener('click', () => {
+      const data = {
+        cut: visualizer.currentCut,
+        material: visualizer.currentMaterial,
+        materialData: GEM_MATERIALS[visualizer.currentMaterial],
+        parameters: visualizer.currentParams,
+        timestamp: new Date().toISOString(),
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `gem-${visualizer.currentCut}-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  }
 
   // File upload
-  document.querySelector('#gemcad-file')?.addEventListener('change', (e) => {
-    alert('GemCAD file import coming soon!');
-  });
+  const fileUpload = document.querySelector('#file-upload');
+  if (fileUpload) {
+    fileUpload.addEventListener('change', (e) => {
+      alert('GemCAD file import coming soon!');
+    });
+  }
 
-  document.querySelector('#show-light-rays')?.addEventListener('change', (e) => {
-    if (e.target.checked) {
-      console.log('Light rays visualization: Feature in development');
-    }
-  });
+  // Light rays
+  const lightRaysCheckbox = document.querySelector('#show-light-rays');
+  if (lightRaysCheckbox) {
+    lightRaysCheckbox.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        console.log('Light rays visualization: Feature in development');
+      }
+    });
+  }
 
   visualizer.updateParameterControls();
 });
