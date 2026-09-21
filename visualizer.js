@@ -240,36 +240,87 @@ class RadiantCut extends GemCut {
   generateGeometry(params) {
     const facets = params.facetRings || 4;
     const vertices = [];
+    const indices = [];
+    
     vertices.push(0, 1, 0);
+    let vertexIndex = 1;
+    const ringStartIndices = [];
 
+    // Crown rings
     for (let ring = 1; ring <= facets; ring++) {
       const t = ring / facets;
       const radius = Math.sin(t * Math.PI * 0.5);
       const height = Math.cos(t * Math.PI * 0.5) * 0.6;
       const facetsInRing = 8 + ring * 2;
 
+      ringStartIndices.push(vertexIndex);
       for (let i = 0; i < facetsInRing; i++) {
         const angle = (i / facetsInRing) * Math.PI * 2;
         vertices.push(Math.cos(angle) * radius, height, Math.sin(angle) * radius);
       }
+      vertexIndex += facetsInRing;
     }
 
+    // Pavilion rings
+    const pavilionStartIndices = [];
     for (let ring = 1; ring <= facets; ring++) {
       const t = ring / facets;
       const radius = Math.sin(t * Math.PI * 0.5);
       const height = -Math.cos(t * Math.PI * 0.5) * 0.8;
       const facetsInRing = 8 + ring * 2;
 
+      pavilionStartIndices.push(vertexIndex);
       for (let i = 0; i < facetsInRing; i++) {
         const angle = (i / facetsInRing) * Math.PI * 2;
         vertices.push(Math.cos(angle) * radius, height, Math.sin(angle) * radius);
       }
+      vertexIndex += facetsInRing;
     }
 
+    const culetIndex = vertexIndex;
     vertices.push(0, -1.2, 0);
+
+    // Create crown facet faces
+    for (let ring = 0; ring < ringStartIndices.length; ring++) {
+      const start = ringStartIndices[ring];
+      const facetsInRing = 8 + (ring + 1) * 2;
+
+      for (let i = 0; i < facetsInRing; i++) {
+        const next = (i + 1) % facetsInRing;
+        if (ring === 0) {
+          // Connect to table
+          indices.push(0, start + i, start + next);
+        } else {
+          // Connect to previous ring
+          const prevStart = ringStartIndices[ring - 1];
+          const prevFacetsInRing = 8 + ring * 2;
+          indices.push(start + i, prevStart + (i % prevFacetsInRing), start + next);
+        }
+      }
+    }
+
+    // Create pavilion facet faces
+    for (let ring = 0; ring < pavilionStartIndices.length; ring++) {
+      const start = pavilionStartIndices[ring];
+      const facetsInRing = 8 + (ring + 1) * 2;
+
+      for (let i = 0; i < facetsInRing; i++) {
+        const next = (i + 1) % facetsInRing;
+        if (ring === pavilionStartIndices.length - 1) {
+          // Connect to culet
+          indices.push(start + i, culetIndex, start + next);
+        } else {
+          // Connect to next ring
+          const nextStart = pavilionStartIndices[ring + 1];
+          const nextFacetsInRing = 8 + (ring + 2) * 2;
+          indices.push(start + i, start + next, nextStart + (i % nextFacetsInRing));
+        }
+      }
+    }
 
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+    geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indices), 1));
     geometry.computeVertexNormals();
 
     return geometry;
@@ -290,6 +341,7 @@ class GemVisualizer {
     this.currentParams = {};
     this.gemColor = 0x82c7a3;
     this.wireframeGroup = null;
+    this.originalLightIntensities = null;
 
     this.cuts = {
       brilliant: new BrilliantCut('Brilliant', {}),
@@ -472,14 +524,18 @@ class GemVisualizer {
 
   updateBrightness(value) {
     const factor = value / 100;
-    this.scene.children.forEach(child => {
-      if (child.isLight) {
-        if (child instanceof THREE.AmbientLight) {
-          child.intensity = 0.5 * factor;
-        } else {
-          child.intensity = Math.max(0.3, child.intensity * factor);
+    // Store original intensities if not already stored
+    if (!this.originalLightIntensities) {
+      this.originalLightIntensities = new Map();
+      this.scene.children.forEach(child => {
+        if (child.isLight) {
+          this.originalLightIntensities.set(child, child.intensity);
         }
-      }
+      });
+    }
+    
+    this.originalLightIntensities.forEach((originalIntensity, light) => {
+      light.intensity = originalIntensity * factor;
     });
   }
 }
@@ -506,6 +562,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }, {});
     visualizer.updateGem(defaults);
   });
+
+  // Initialize parameter controls for initial cut
+  updateParameterControls(visualizer);
 
   function updateParameterControls(visualizer) {
     const container = document.querySelector('#params-container');
@@ -561,5 +620,46 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.files.length > 0) {
       alert('GemCAD file upload: coming soon!');
     }
+  });
+
+  // Catalog stone selector - changes gem color based on selection
+  document.querySelector('#gem-select').addEventListener('change', (e) => {
+    if (e.target.value) {
+      const stoneColors = {
+        'emerald-001': 0x82c7a3,
+        'sapphire-001': 0x67bbca,
+        'diamond-001': 0xfff1c7,
+        'ruby-001': 0xe74c3c,
+        'topaz-001': 0xf5b041,
+        'aquamarine-001': 0x6dd5ed,
+      };
+      visualizer.gemColor = stoneColors[e.target.value] || 0x82c7a3;
+      visualizer.updateGem(visualizer.currentParams);
+    }
+  });
+
+  // Light rays toggle (placeholder for future enhancement)
+  document.querySelector('#show-light-rays').addEventListener('change', (e) => {
+    console.log('Light rays:', e.target.checked);
+    // Future implementation for light ray visualization
+  });
+
+  // Download specs button
+  document.querySelector('#download-data').addEventListener('click', () => {
+    const cutName = visualizer.currentCut;
+    const params = visualizer.currentParams;
+    const specs = {
+      cut: cutName,
+      parameters: params,
+      timestamp: new Date().toISOString(),
+    };
+    const dataStr = JSON.stringify(specs, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `gem-${cutName}-${Date.now()}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
   });
 });
