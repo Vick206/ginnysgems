@@ -467,6 +467,7 @@ class GemVisualizer {
       metalness: 0.15,
       roughness: 0.35,
       side: THREE.DoubleSide,
+      flatShading: true,
     });
 
     this.gem = new THREE.Mesh(geometry, material);
