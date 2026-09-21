@@ -576,11 +576,18 @@ function initVisualizer() {
   }
 
   console.log('[GemVisualizer] Canvas found, creating visualizer...');
+  let visualizer; // Declare here so it's accessible to all event listeners
   try {
-    const visualizer = new GemVisualizer(canvas);
+    visualizer = new GemVisualizer(canvas);
     console.log('[GemVisualizer] Visualizer created successfully');
   } catch (e) {
     console.error('[GemVisualizer] Error creating visualizer:', e);
+    console.error(e.stack);
+    return;
+  }
+  
+  if (!visualizer) {
+    console.error('[GemVisualizer] Visualizer is null');
     return;
   }
   
