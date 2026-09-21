@@ -72,7 +72,7 @@ class GeometryGenerator {
      * Used for: Brilliant, Oval, Marquise, Pear cuts
      */
     const geometry = new THREE.LatheGeometry(
-      points.map(([x, y]) => new THREE.Vector2(x, y)),
+      points.map(([x, y]) => new THREE.Vector2(Math.max(0, x), y)),
       segments,
       phiStart,
       phiLength
@@ -83,116 +83,189 @@ class GeometryGenerator {
 
   static brilliantProfile(crownAngle, pavilionAngle) {
     /**
-     * Creates a 2D profile for a brilliant cut gem
-     * Angles in degrees, 0-90
+     * Brilliant cut profile: table -> crown facets -> girdle -> pavilion facets -> culet
+     * More realistic proportions based on gemstone industry standards
      */
     const crownRad = (crownAngle * Math.PI) / 180;
     const pavilionRad = (pavilionAngle * Math.PI) / 180;
 
-    const table = 0.15;
-    const crownHeight = Math.cos(crownRad) * 0.5;
-    const girdleRadius = 1;
-    const pavilionHeight = -Math.cos(pavilionRad) * 0.65;
+    const crownHeight = Math.cos(crownRad) * 0.35;
+    const pavilionHeight = -Math.cos(pavilionRad) * 0.5;
+    const tableRadius = 0.2;
+    const girdleRadius = 1.0;
 
+    // Build smooth profile curve
     return [
-      [0, pavilionHeight], // Culet (bottom point)
-      [girdleRadius * 0.7, pavilionHeight * 0.5], // Pavilion facet
-      [girdleRadius, 0], // Girdle
-      [girdleRadius * 0.8, crownHeight * 0.6], // Crown facet
-      [table, crownHeight],
-      [0, crownHeight + 0.1], // Table (flat top)
+      [0, pavilionHeight + 0.05], // Culet (tiny point)
+      [girdleRadius * 0.6, pavilionHeight * 0.7], // Lower pavilion
+      [girdleRadius * 0.9, pavilionHeight * 0.2], // Upper pavilion
+      [girdleRadius, 0], // Girdle (widest)
+      [girdleRadius * 0.75, crownHeight * 0.4], // Lower crown
+      [tableRadius * 1.2, crownHeight * 0.8], // Upper crown
+      [tableRadius, crownHeight + 0.05], // Table (flat top)
+      [0, crownHeight + 0.08], // Table center peak
     ];
   }
 
   static ovalProfile(lengthRatio = 1.3) {
     /**
-     * Creates an oval/elliptical profile
+     * Oval/elliptical profile with smooth curves
      */
     const points = [];
-    const segments = 16;
-    for (let i = 0; i <= segments; i++) {
-      const t = i / segments;
+    for (let i = 0; i <= 32; i++) {
+      const t = i / 32;
       const angle = t * Math.PI;
-      const y = Math.cos(angle) * 0.4;
-      const radius = Math.sin(angle) * (1 + (lengthRatio - 1) * Math.sin(angle * 0.5));
-      points.push([radius, y]);
+      const y = Math.cos(angle) * 0.5 - 0.25;
+      const sineT = Math.sin(angle);
+      // Create elliptical radius with lengthen toward poles
+      const radius = sineT * (1 + 0.3 * lengthRatio * sineT * sineT);
+      points.push([Math.max(0, radius), y]);
     }
     return points;
   }
 
   static marquiseProfile() {
     /**
-     * Creates a marquise (boat-shaped) profile
+     * Marquise: boat-shaped, pointed at both ends
      */
     const points = [];
-    for (let i = 0; i <= 20; i++) {
-      const t = i / 20;
+    for (let i = 0; i <= 40; i++) {
+      const t = i / 40;
       const angle = t * Math.PI;
-      const y = Math.cos(angle) * 0.4;
-      const r = Math.sin(angle) * (1.5 * Math.sin(angle * 0.5));
-      points.push([Math.max(0, r), y]);
+      const y = Math.cos(angle) * 0.5 - 0.25;
+      const sin = Math.sin(angle);
+      // Pointed ends, wider middle
+      const radius = sin * Math.sin(angle * 0.5) * 1.2;
+      points.push([Math.max(0, radius), y]);
     }
     return points;
   }
 
   static pearProfile() {
     /**
-     * Creates a pear-shaped profile
+     * Pear: teardrop shape, rounded at top, pointed at bottom
      */
     const points = [];
-    for (let i = 0; i <= 24; i++) {
-      const t = i / 24;
+    for (let i = 0; i <= 40; i++) {
+      const t = i / 40;
       const angle = t * Math.PI;
-      const y = Math.cos(angle) * 0.4;
-      const baseRadius = Math.sin(angle);
-      const pear = 1 + 0.4 * Math.sin(angle * 0.5);
-      const r = baseRadius * pear;
-      points.push([Math.max(0, r), y]);
+      const y = Math.cos(angle) * 0.5 - 0.25;
+      const sin = Math.sin(angle);
+      // Wider at top, pointed at bottom
+      const bulge = 1 + 0.5 * Math.sin(angle * 0.5);
+      const radius = sin * bulge * 0.9;
+      points.push([Math.max(0, radius), y]);
     }
     return points;
   }
 
-  static stepCutGeometry(facetsPerSide = 3, width = 0.8, length = 1.2) {
+  static cushionCutGeometry(facetsPerSide = 3) {
     /**
-     * Creates a step-cut gem (Emerald, Asscher, Cushion)
-     * Uses rectangular layers with connecting facets
+     * Cushion cut: rounded square with stepped facets
+     * Simpler and cleaner than nested boxes
      */
     const vertices = [];
     const indices = [];
-    const crownHeight = 0.35;
-    const pavilionHeight = -0.45;
 
-    // Helper: create rectangular layer
-    const addLayer = (y, sx, sz) => {
+    const crownH = 0.3;
+    const pavilionH = -0.35;
+    const edgeRound = 0.15; // Rounded corner radius
+
+    // Helper: add rounded rectangle at height y with size scale
+    const addRoundedSquare = (y, scale) => {
       const startIdx = vertices.length / 3;
-      vertices.push(-sx, y, -sz, sx, y, -sz, sx, y, sz, -sx, y, sz);
-      return { startIdx, count: 4 };
+      const s = scale;
+      const r = edgeRound * scale;
+
+      // Create 8 points for rounded square
+      const points = [
+        [-s + r, y, -s + r], // Corners with curve
+        [s - r, y, -s + r],
+        [s, y, -s], // Straight edges outside corners
+        [s, y, s],
+        [s - r, y, s - r],
+        [-s + r, y, s - r],
+        [-s, y, s],
+        [-s, y, -s],
+      ];
+
+      points.forEach(p => vertices.push(...p));
+      return { startIdx, count: 8 };
     };
 
-    // Build layers
+    // Build layers from table to culet
     const layers = [];
-    layers.push(addLayer(crownHeight, width * 0.2, length * 0.2)); // Table
-    for (let i = 1; i <= facetsPerSide; i++) {
-      const t = i / (facetsPerSide + 1);
-      layers.push(addLayer(crownHeight - t * (crownHeight - 0.01), width * (0.2 + 0.3 * t), length * (0.2 + 0.3 * t)));
-    }
-    layers.push(addLayer(0, width, length)); // Girdle
-    for (let i = 1; i <= facetsPerSide; i++) {
-      const t = i / (facetsPerSide + 1);
-      layers.push(addLayer(-t * pavilionHeight, width * (1 - 0.4 * t), length * (1 - 0.4 * t)));
-    }
-    layers.push(addLayer(pavilionHeight, width * 0.1, length * 0.1)); // Culet
+    layers.push(addRoundedSquare(crownH, 0.15)); // Table
+    layers.push(addRoundedSquare(crownH * 0.5, 0.35)); // Crown
+    layers.push(addRoundedSquare(0, 0.75)); // Girdle
+    layers.push(addRoundedSquare(pavilionH * 0.5, 0.55)); // Pavilion
+    layers.push(addRoundedSquare(pavilionH, 0.1)); // Culet
 
-    // Connect layers with quads
+    // Connect layers with triangles
     for (let l = 0; l < layers.length - 1; l++) {
       const curr = layers[l];
       const next = layers[l + 1];
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 8; i++) {
         const a = curr.startIdx + i;
-        const b = curr.startIdx + (i + 1) % 4;
-        const c = next.startIdx + (i + 1) % 4;
+        const b = curr.startIdx + (i + 1) % 8;
+        const c = next.startIdx + (i + 1) % 8;
         const d = next.startIdx + i;
         indices.push(a, b, c, a, c, d);
+      }
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+    geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indices), 1));
+    geometry.computeVertexNormals();
+    return geometry;
+  }
+
+  static stepCutGeometry(facetsPerSide = 3, isSquare = false) {
+    /**
+     * Emerald/Asscher: rectangular step cuts
+     */
+    const w = isSquare ? 0.8 : 0.7;
+    const l = isSquare ? 0.8 : 1.1;
+    const crownH = 0.3;
+    const pavilionH = -0.35;
+
+    const vertices = [];
+    const indices = [];
+
+    // Build with proper faceting
+    const addLayer = (y, wScale, lScale) => {
+      const startIdx = vertices.length / 3;
+      const hw = w * wScale / 2;
+      const hl = l * lScale / 2;
+      vertices.push(
+        -hw, y, -hl, hw, y, -hl, hw, y, hl, -hw, y, hl
+      );
+      return { startIdx, count: 4 };
+    };
+
+    const layers = [];
+    layers.push(addLayer(crownH, 0.4, 0.4)); // Table
+    for (let i = 1; i <= facetsPerSide; i++) {
+      const t = i / (facetsPerSide + 1);
+      layers.push(addLayer(crownH - t * (crownH - 0.02), 0.4 + 0.6 * t, 0.4 + 0.6 * t));
+    }
+    layers.push(addLayer(0, 1, 1)); // Girdle
+    for (let i = 1; i <= facetsPerSide; i++) {
+      const t = i / (facetsPerSide + 1);
+      layers.push(addLayer(-t * Math.abs(pavilionH), 1 - 0.4 * t, 1 - 0.4 * t));
+    }
+    layers.push(addLayer(pavilionH, 0.15, 0.15)); // Culet
+
+    for (let l = 0; l < layers.length - 1; l++) {
+      const c = layers[l];
+      const n = layers[l + 1];
+      for (let i = 0; i < 4; i++) {
+        const a = c.startIdx + i;
+        const b = c.startIdx + (i + 1) % 4;
+        const d = n.startIdx + i;
+        const e = n.startIdx + (i + 1) % 4;
+        indices.push(a, b, e, a, e, d);
       }
     }
 
@@ -231,11 +304,11 @@ class GemVisualizer {
       },
       emerald: {
         name: 'Emerald',
-        generate: (params) => GeometryGenerator.stepCutGeometry(params.facetsPerSide || 3, 0.8, 1.2),
+        generate: (params) => GeometryGenerator.stepCutGeometry(params.facetsPerSide || 3, false),
       },
       cushion: {
         name: 'Cushion',
-        generate: (params) => GeometryGenerator.stepCutGeometry(params.facetsPerSide || 3, 1.0, 1.0),
+        generate: (params) => GeometryGenerator.cushionCutGeometry(params.facetsPerSide || 3),
       },
       oval: {
         name: 'Oval',
@@ -246,11 +319,11 @@ class GemVisualizer {
       },
       radiant: {
         name: 'Radiant',
-        generate: (params) => GeometryGenerator.stepCutGeometry(params.facetRings || 3, 0.9, 0.9),
+        generate: (params) => GeometryGenerator.stepCutGeometry(params.facetRings || 3, true),
       },
       asscher: {
         name: 'Asscher',
-        generate: (params) => GeometryGenerator.stepCutGeometry(params.facetsPerSide || 4, 0.7, 0.7),
+        generate: (params) => GeometryGenerator.stepCutGeometry(params.facetsPerSide || 4, true),
       },
       marquise: {
         name: 'Marquise',
