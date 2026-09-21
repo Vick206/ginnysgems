@@ -375,6 +375,7 @@ class GemVisualizer {
   }
 
   initScene() {
+    console.log('[initScene] Starting scene initialization');
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x1a2826);
 
@@ -382,10 +383,12 @@ class GemVisualizer {
     const height = this.canvas.clientHeight;
     this.camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
     this.camera.position.set(0, 0, 4);
+    console.log(`[initScene] Camera created: ${width}x${height}`);
 
     this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
     this.renderer.setSize(width, height);
     this.renderer.setPixelRatio(window.devicePixelRatio);
+    console.log(`[initScene] Renderer created and configured`);
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     this.scene.add(ambientLight);
@@ -399,10 +402,16 @@ class GemVisualizer {
     directionalLight2.position.set(-3, -3, -3);
     this.scene.add(directionalLight2);
     this.originalLightIntensities.set(directionalLight2, 0.4);
+    console.log(`[initScene] Lights added`);
 
     this.setupControls();
+    console.log(`[initScene] Controls set up`);
+    
     this.generateGem(this.currentCut, {});
+    console.log(`[initScene] Initial gem generated`);
+    
     this.animate();
+    console.log(`[initScene] Animation started`);
   }
 
   setupControls() {
@@ -441,11 +450,34 @@ class GemVisualizer {
     }
 
     const cut = this.cuts[cutName];
-    if (!cut) return;
+    if (!cut) {
+      console.error(`Cut not found: ${cutName}`);
+      return;
+    }
 
     try {
+      console.log(`[generateGem] Creating ${cutName} with params:`, params);
       const geometry = cut.generate(params);
+      
+      // Log geometry stats
+      const positionAttr = geometry.getAttribute('position');
+      const indexAttr = geometry.getIndex();
+      console.log(`[generateGem] ${cutName} geometry:`, {
+        vertices: positionAttr.count,
+        faces: indexAttr ? indexAttr.count / 3 : 'unknown',
+        hasNormals: geometry.hasAttribute('normal'),
+      });
+      
+      // Check bounds
+      geometry.computeBoundingBox();
+      console.log(`[generateGem] Bounding box:`, {
+        min: geometry.boundingBox.min,
+        max: geometry.boundingBox.max,
+        size: geometry.boundingBox.getSize(new THREE.Vector3()),
+      });
+      
       const materialData = GEM_MATERIALS[this.currentMaterial] || GEM_MATERIALS.diamond;
+      console.log(`[generateGem] Material: ${this.currentMaterial}`, materialData);
 
       const material = new THREE.MeshStandardMaterial({
         color: materialData.color,
@@ -458,12 +490,14 @@ class GemVisualizer {
       this.gem = new THREE.Mesh(geometry, material);
       this.scene.add(this.gem);
       this.currentParams = params;
+      console.log(`[generateGem] Gem added to scene`);
 
       if (document.querySelector('#show-wireframe')?.checked) {
         this.updateWireframe();
       }
     } catch (error) {
-      console.error(`Error generating ${cutName}:`, error);
+      console.error(`[generateGem] Error generating ${cutName}:`, error);
+      console.error(error.stack);
     }
   }
 
@@ -513,7 +547,11 @@ class GemVisualizer {
     if (this.autoRotate && this.gem) {
       this.gem.rotation.z += this.rotationSpeed * 0.01;
     }
-    this.renderer.render(this.scene, this.camera);
+    if (this.renderer && this.scene && this.camera) {
+      this.renderer.render(this.scene, this.camera);
+    } else {
+      console.error('[animate] Missing renderer, scene, or camera');
+    }
     requestAnimationFrame(this.animate);
   };
 }
