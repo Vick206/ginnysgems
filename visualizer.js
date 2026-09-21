@@ -90,45 +90,80 @@ class EmeraldCut extends GemCut {
     const stepsPerSide = params.facetsPerSide || 3;
     const length = 1.2;
     const width = 0.8;
-    const depth = 0.6;
+    const crownHeight = 0.4;
+    const pavilionHeight = -0.5;
 
     const vertices = [];
     const indices = [];
 
-    for (let step = 0; step <= stepsPerSide; step++) {
-      const t = step / stepsPerSide;
-      const x = (width / 2) * (1 - t * 0.3);
-      const y = depth * 0.6 * (1 - t);
+    // Table (top)
+    const tableStart = vertices.length / 3;
+    vertices.push(-width / 4, crownHeight, -length / 4);
+    vertices.push(width / 4, crownHeight, -length / 4);
+    vertices.push(width / 4, crownHeight, length / 4);
+    vertices.push(-width / 4, crownHeight, length / 4);
+
+    // Crown steps (moving down and out)
+    const crownStart = vertices.length / 3;
+    for (let step = 0; step < stepsPerSide; step++) {
+      const t = (step + 1) / (stepsPerSide + 1);
+      const x = (width / 2) * t;
+      const z = (length / 2) * t;
+      const y = crownHeight - t * (crownHeight - 0.02);
       
-      vertices.push(-x, y, -length / 2);
-      vertices.push(x, y, -length / 2);
-      vertices.push(x, y, length / 2);
-      vertices.push(-x, y, length / 2);
+      vertices.push(-x, y, -z);
+      vertices.push(x, y, -z);
+      vertices.push(x, y, z);
+      vertices.push(-x, y, z);
     }
 
-    for (let step = 0; step <= stepsPerSide; step++) {
-      const t = step / stepsPerSide;
-      const x = (width / 2) * (1 - (1 - t) * 0.3);
-      const y = -depth * 0.8 * t;
+    // Girdle
+    const girdleStart = vertices.length / 3;
+    vertices.push(-width / 2, 0, -length / 2);
+    vertices.push(width / 2, 0, -length / 2);
+    vertices.push(width / 2, 0, length / 2);
+    vertices.push(-width / 2, 0, length / 2);
+
+    // Pavilion steps (moving down and in)
+    const pavilionStart = vertices.length / 3;
+    for (let step = 0; step < stepsPerSide; step++) {
+      const t = (step + 1) / (stepsPerSide + 1);
+      const x = (width / 2) * (1 - t);
+      const z = (length / 2) * (1 - t);
+      const y = 0 + t * pavilionHeight;
       
-      vertices.push(-x, y, -length / 2);
-      vertices.push(x, y, -length / 2);
-      vertices.push(x, y, length / 2);
-      vertices.push(-x, y, length / 2);
+      vertices.push(-x, y, -z);
+      vertices.push(x, y, -z);
+      vertices.push(x, y, z);
+      vertices.push(-x, y, z);
     }
 
-    const vertsPerStep = 4;
-    const totalSteps = stepsPerSide + 1 + stepsPerSide + 1;
+    // Culet (bottom)
+    const culetStart = vertices.length / 3;
+    vertices.push(-width / 8, pavilionHeight, -length / 8);
+    vertices.push(width / 8, pavilionHeight, -length / 8);
+    vertices.push(width / 8, pavilionHeight, length / 8);
+    vertices.push(-width / 8, pavilionHeight, length / 8);
 
-    for (let step = 0; step < totalSteps - 1; step++) {
-      const current = step * vertsPerStep;
-      const next = (step + 1) * vertsPerStep;
+    // Face table
+    indices.push(tableStart, tableStart + 1, tableStart + 2);
+    indices.push(tableStart, tableStart + 2, tableStart + 3);
 
+    // Face culet
+    indices.push(culetStart, culetStart + 2, culetStart + 1);
+    indices.push(culetStart, culetStart + 3, culetStart + 2);
+
+    // Connect all steps with quads
+    const allSteps = [tableStart, crownStart, girdleStart, pavilionStart, culetStart];
+    for (let s = 0; s < allSteps.length - 1; s++) {
+      const step1Idx = allSteps[s];
+      const step2Idx = allSteps[s + 1];
+      
       for (let i = 0; i < 4; i++) {
-        const v1 = current + i;
-        const v2 = current + (i + 1) % 4;
-        const v3 = next + (i + 1) % 4;
-        const v4 = next + i;
+        const v1 = step1Idx + i;
+        const v2 = step1Idx + (i + 1) % 4;
+        const v3 = step2Idx + (i + 1) % 4;
+        const v4 = step2Idx + i;
 
         indices.push(v1, v2, v3);
         indices.push(v1, v3, v4);
@@ -146,38 +181,117 @@ class EmeraldCut extends GemCut {
 
 class CushionCut extends GemCut {
   generateGeometry(params) {
-    const segments = params.facetsPerSide || 4;
+    const facetsPerSide = params.facetsPerSide || 4;
     const vertices = [];
     const indices = [];
 
-    const radius = 1;
-    const depth = 0.7;
+    const width = 1.0;
+    const length = 1.0;
+    const crownHeight = 0.35;
+    const pavilionHeight = -0.45;
+    const cornerRadius = 0.2;
 
-    for (let layer = 0; layer <= segments * 2; layer++) {
-      const t = layer / (segments * 2);
-      const y = depth * (0.5 - t);
-      const scale = Math.sin(t * Math.PI) * 0.7 + 0.3;
-
-      for (let i = 0; i <= segments * 4; i++) {
-        const angle = (i / (segments * 4)) * Math.PI * 2;
-        const x = Math.cos(angle) * radius * scale;
-        const z = Math.sin(angle) * radius * scale;
+    // Helper: create a rounded square at a given height and size
+    const addRoundedSquareLayer = (y, sizeX, sizeZ, segments) => {
+      const startIdx = vertices.length / 3;
+      const halfX = sizeX / 2;
+      const halfZ = sizeZ / 2;
+      const cornerSegs = Math.ceil(segments / 4);
+      
+      let vertCount = 0;
+      
+      // Right edge (with corner at end)
+      for (let i = 0; i <= cornerSegs; i++) {
+        const t = i / cornerSegs;
+        const x = halfX - cornerRadius + cornerRadius * Math.cos(t * Math.PI / 2);
+        const z = -halfZ + cornerRadius * Math.sin(t * Math.PI / 2);
         vertices.push(x, y, z);
+        vertCount++;
       }
+      
+      // Bottom edge (with corner at end)
+      for (let i = 0; i <= cornerSegs; i++) {
+        const t = i / cornerSegs;
+        const x = halfX - cornerRadius * Math.sin(t * Math.PI / 2);
+        const z = -halfZ + cornerRadius + cornerRadius * Math.cos(t * Math.PI / 2);
+        vertices.push(x, y, z);
+        vertCount++;
+      }
+      
+      // Left edge (with corner at end)
+      for (let i = 0; i <= cornerSegs; i++) {
+        const t = i / cornerSegs;
+        const x = -halfX + cornerRadius - cornerRadius * Math.cos(t * Math.PI / 2);
+        const z = halfZ - cornerRadius * Math.sin(t * Math.PI / 2);
+        vertices.push(x, y, z);
+        vertCount++;
+      }
+      
+      // Top edge (with corner at end)
+      for (let i = 0; i <= cornerSegs; i++) {
+        const t = i / cornerSegs;
+        const x = -halfX + cornerRadius * Math.sin(t * Math.PI / 2);
+        const z = halfZ - cornerRadius - cornerRadius * Math.cos(t * Math.PI / 2);
+        vertices.push(x, y, z);
+        vertCount++;
+      }
+      
+      return { startIdx, vertCount };
+    };
+
+    // Table (top)
+    const tableLayer = addRoundedSquareLayer(crownHeight, width * 0.4, length * 0.4, 4);
+
+    // Crown steps
+    const crownLayers = [];
+    for (let step = 1; step <= facetsPerSide; step++) {
+      const t = step / (facetsPerSide + 1);
+      const size = width * (0.4 + 0.6 * t);
+      const y = crownHeight - t * (crownHeight - 0.01);
+      crownLayers.push(addRoundedSquareLayer(y, size, size, 8));
     }
 
-    const vertsPerLayer = segments * 4 + 1;
-    for (let layer = 0; layer < segments * 2; layer++) {
-      for (let i = 0; i < vertsPerLayer - 1; i++) {
-        const v1 = layer * vertsPerLayer + i;
-        const v2 = layer * vertsPerLayer + (i + 1) % (vertsPerLayer - 1);
-        const v3 = (layer + 1) * vertsPerLayer + (i + 1) % (vertsPerLayer - 1);
-        const v4 = (layer + 1) * vertsPerLayer + i;
+    // Girdle
+    const girdleLayer = addRoundedSquareLayer(0, width, length, 8);
+
+    // Pavilion steps
+    const pavilionLayers = [];
+    for (let step = 1; step <= facetsPerSide; step++) {
+      const t = step / (facetsPerSide + 1);
+      const size = width * (1 - 0.4 * t);
+      const y = 0 + t * pavilionHeight;
+      pavilionLayers.push(addRoundedSquareLayer(y, size, size, 8));
+    }
+
+    // Culet (bottom)
+    const culetLayer = addRoundedSquareLayer(pavilionHeight, width * 0.2, length * 0.2, 4);
+
+    // Helper: connect two layers with quads
+    const connectLayers = (layer1, layer2) => {
+      const vertCount = Math.min(layer1.vertCount, layer2.vertCount);
+      for (let i = 0; i < vertCount; i++) {
+        const v1 = layer1.startIdx + i;
+        const v2 = layer1.startIdx + (i + 1) % vertCount;
+        const v3 = layer2.startIdx + (i + 1) % vertCount;
+        const v4 = layer2.startIdx + i;
 
         indices.push(v1, v2, v3);
         indices.push(v1, v3, v4);
       }
+    };
+
+    // Connect all layers
+    connectLayers(tableLayer, crownLayers[0]);
+    for (let i = 0; i < crownLayers.length - 1; i++) {
+      connectLayers(crownLayers[i], crownLayers[i + 1]);
     }
+    connectLayers(crownLayers[crownLayers.length - 1], girdleLayer);
+
+    connectLayers(girdleLayer, pavilionLayers[0]);
+    for (let i = 0; i < pavilionLayers.length - 1; i++) {
+      connectLayers(pavilionLayers[i], pavilionLayers[i + 1]);
+    }
+    connectLayers(pavilionLayers[pavilionLayers.length - 1], culetLayer);
 
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
