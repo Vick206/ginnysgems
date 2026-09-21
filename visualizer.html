@@ -47,13 +47,31 @@
           </select>
         </div>
 
+        <div class="control-group">
+          <label for="cut-select">Cut Style:</label>
+          <select id="cut-select" aria-label="Select gem cut">
+            <option value="brilliant">Brilliant (Round)</option>
+            <option value="emerald">Emerald</option>
+            <option value="cushion">Cushion</option>
+            <option value="oval">Oval</option>
+            <option value="radiant">Radiant</option>
+            <option value="asscher">Asscher</option>
+            <option value="marquise">Marquise</option>
+            <option value="pear">Pear</option>
+          </select>
+        </div>
+
+        <fieldset class="control-group" id="cut-parameters">
+          <legend>Cut Parameters</legend>
+          <div id="params-container"></div>
+        </fieldset>
+
         <fieldset class="control-group">
           <legend>Display Options</legend>
           <div class="checkbox-group">
             <label><input type="checkbox" id="show-facets" checked> Show Facets</label>
-            <label><input type="checkbox" id="show-edges" checked> Show Edges</label>
-            <label><input type="checkbox" id="show-measurements"> Show Measurements</label>
-            <label><input type="checkbox" id="show-angles"> Show Angles</label>
+            <label><input type="checkbox" id="show-wireframe"> Show Wireframe</label>
+            <label><input type="checkbox" id="show-light-rays"> Light Rays</label>
           </div>
         </fieldset>
 
@@ -64,7 +82,7 @@
             <input type="range" id="brightness" min="0" max="200" value="100" aria-label="Adjust brightness">
           </div>
           <div class="slider-group">
-            <label for="rotation-speed">Auto Rotation Speed:</label>
+            <label for="rotation-speed">Auto Rotation:</label>
             <input type="range" id="rotation-speed" min="0" max="100" value="0" aria-label="Adjust rotation speed">
           </div>
         </fieldset>
