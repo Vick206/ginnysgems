@@ -28,12 +28,14 @@ ginnysgems/
 
 ### GemCAD Visualizer (visualizer.html)
 - **3D Interactive Canvas**: Powered by Three.js
-- **Multiple Display Modes**: Toggle facets, edges, measurements, angles
-- **File Upload**: Load custom GemCAD files (.gem, .txt, .csv)
-- **Catalog Stones**: Browse featured stones from the studio
+- **Display Modes**: Toggle the shaded mesh and wireframe edges
+- **Parametric Previews**: Eight adjustable cut shapes with closed, faceted geometry; these are illustrations, not measured GemCAD models
+- **Catalog Stones**: Gallery links select the preview material and cut
 - **Lighting Controls**: Adjust brightness for optimal viewing
 - **Auto-Rotation**: Smooth automatic rotation of gems
-- **Responsive Controls**: Mouse drag to rotate, scroll to zoom
+- **Responsive Controls**: Mouse or touch drag to rotate, scroll to zoom, automatic canvas resizing
+- **Download Specs**: Export the current preview material, cut, and parameters as JSON
+- **Planned Features**: GemCAD file import and optical ray tracing are unavailable and their controls are disabled
 
 ## Technology Stack
 
@@ -88,7 +90,7 @@ npx http-server
 - [ ] Full GemCAD file parser
 - [ ] Precise facet rendering
 - [ ] Measurement and angle display
-- [ ] Export functionality
+- [x] Preview parameter export (JSON)
 - [ ] Advanced lighting models
 
 ### Phase 3: Enhanced Features
