@@ -3,8 +3,57 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>GemCAD Visualizer | Ginny's Gemstones</title>
-  <meta name="description" content="Interactive 3D GemCAD gemstone visualizer. Rotate, inspect, and analyze faceting of precision cut gemstones.">
+  <title>3D Gemstone Cut Visualizer | Ginny's Gemstones</title>
+  <meta name="description" content="Explore eight gemstone cut previews in 3D. Rotate gems, adjust cut parameters, compare catalog stones, and inspect facets and wireframes.">
+  <link rel="canonical" href="https://ginnysgems.com/visualizer.html">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Ginny's Gemstones">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:title" content="3D Gemstone Cut Visualizer | Ginny's Gemstones">
+  <meta property="og:description" content="Explore eight gemstone cut previews in 3D. Rotate gems, adjust cut parameters, compare catalog stones, and inspect facets and wireframes.">
+  <meta property="og:url" content="https://ginnysgems.com/visualizer.html">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="3D Gemstone Cut Visualizer | Ginny's Gemstones">
+  <meta name="twitter:description" content="Explore eight gemstone cut previews in 3D. Rotate gems, adjust cut parameters, compare catalog stones, and inspect facets and wireframes.">
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://ginnysgems.com/#studio",
+      "name": "Ginny's Gemstones",
+      "url": "https://ginnysgems.com/",
+      "description": "Independent lapidary studio offering custom gemstone cutting, recuts, jeweler partnerships, and bespoke jewelry."
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://ginnysgems.com/#website",
+      "url": "https://ginnysgems.com/",
+      "name": "Ginny's Gemstones",
+      "publisher": {
+        "@id": "https://ginnysgems.com/#studio"
+      },
+      "inLanguage": "en"
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://ginnysgems.com/visualizer.html#page",
+      "url": "https://ginnysgems.com/visualizer.html",
+      "name": "3D Gemstone Cut Visualizer | Ginny's Gemstones",
+      "description": "Explore eight gemstone cut previews in 3D. Rotate gems, adjust cut parameters, compare catalog stones, and inspect facets and wireframes.",
+      "isPartOf": {
+        "@id": "https://ginnysgems.com/#website"
+      },
+      "about": {
+        "@id": "https://ginnysgems.com/#studio"
+      },
+      "inLanguage": "en"
+    }
+  ]
+}
+  </script>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23132f2c' d='M32 3 55 19 47 51 32 61 17 51 9 19z'/%3E%3Cpath fill='none' stroke='%23dfb96b' stroke-width='3' d='m9 19 23 42 23-42H9Zm0 0 23 12 23-12M32 3v58'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,6 +67,9 @@
     <a class="nav-back" href="index.html">← Back to Gallery</a>
   </header>
 
+  <section class="visualizer-intro" aria-label="About the gemstone visualizer">
+    <p>Explore brilliant, emerald, cushion, oval, radiant, Asscher, marquise, and pear gemstone cuts in 3D. Drag to rotate, scroll to zoom, and adjust cut parameters to compare shapes. These parametric previews illustrate cut styles; GemCAD import and optical ray tracing are in development.</p>
+  </section>
   <main class="visualizer-container">
     <section class="viewer-section">
       <div class="canvas-wrapper">

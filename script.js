@@ -1,3 +1,14 @@
+// Keep the photo placeholder until a supplied image successfully loads.
+document.querySelectorAll('.showcase-image').forEach((image) => {
+  const frame = image.closest('.showcase-photo');
+  const updatePhoto = () => {
+    frame.classList.toggle('has-photo', image.hasAttribute('src') && image.complete && image.naturalWidth > 0);
+  };
+  image.addEventListener('load', updatePhoto);
+  image.addEventListener('error', () => frame.classList.remove('has-photo'));
+  updatePhoto();
+});
+
 const form = document.querySelector('#commission-form');
 form.addEventListener('submit', (event) => {
   event.preventDefault();
