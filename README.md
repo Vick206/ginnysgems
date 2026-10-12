@@ -12,6 +12,8 @@ ginnysgems/
 ├── visualizer-styles.css   # Visualizer interface styles
 ├── script.js               # Storefront interactions
 ├── visualizer.js           # 3D visualization engine (Three.js)
+├── optics-effects.js        # Glowing ray ribbons and facet glints
+├── studio-renderer.js       # Convex facets, internal ray tracing, progressive antialiasing
 └── README.md               # This file
 ```
 
@@ -31,11 +33,16 @@ ginnysgems/
 - **Display Modes**: Toggle the shaded mesh and wireframe edges
 - **Parametric Previews**: Eight adjustable cut shapes with closed, faceted geometry; these are illustrations, not measured GemCAD models
 - **Catalog Stones**: Gallery links select the preview material and cut
-- **Lighting Controls**: Adjust brightness for optimal viewing
+- **Lighting Controls**: Studio, daylight, and contrast presets with adjustable light direction and brightness; polished surface highlights preserve stone color
 - **Auto-Rotation**: Smooth automatic rotation of gems
 - **Responsive Controls**: Mouse or touch drag to rotate, scroll to zoom, automatic canvas resizing
 - **Download Specs**: Export the current preview material, cut, and parameters as JSON
-- **Planned Features**: GemCAD file import and optical ray tracing are unavailable and their controls are disabled
+- **Transparency**: Dielectric transmission through a closed facet volume, with Fresnel reflection and path-length color absorption
+- **Studio Renderer**: GPU tracing of actual convex preview facets, refraction, total internal reflection, and Fresnel-weighted exits against asymmetric neutral softboxes. Choose 4, 8, or 10 internal bounces. Still views progressively accumulate 12 subpixel samples; rotation and decorative overlays update immediately.
+- **Brilliance & Refraction**: Adjustable polish and refraction with optional RGB dispersion. Star-shaped sparkle accents are off by default; natural brilliance comes from the traced facet geometry.
+- **Ray Appearance**: Soft glowing ribbons with luminous cores and moving light pulses; pulse and glint animation respect reduced-motion preferences
+- **Light Rays**: Color-coded paths traced against preview facets using refraction and total internal reflection, updating with stone rotation and light direction; illustrative paths are capped at eight internal reflections, without dispersion or intensity splitting
+- **Limitations**: Synthetic convex cuts and representative material constants, with bounded RGB tracing. No measured GemCAD input, spectral transport, inclusions, polarization, or scene caustics; the preview is not a light-performance certification. GemCAD import is unavailable and its control is disabled.
 
 ## Technology Stack
 

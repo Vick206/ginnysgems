@@ -68,7 +68,7 @@
   </header>
 
   <section class="visualizer-intro" aria-label="About the gemstone visualizer">
-    <p>Explore brilliant, emerald, cushion, oval, radiant, Asscher, marquise, and pear gemstone cuts in 3D. Drag to rotate, scroll to zoom, and adjust cut parameters to compare shapes. These parametric previews illustrate cut styles; GemCAD import and optical ray tracing are in development.</p>
+    <p>Explore brilliant, emerald, cushion, oval, radiant, Asscher, marquise, and pear gemstone cuts in 3D. Drag to rotate, scroll to zoom, and adjust cut parameters to compare shapes. Use transparency and light rays to explore refraction and internal reflection in these illustrative previews. GemCAD import is in development.</p>
   </section>
   <main class="visualizer-container">
     <section class="viewer-section">
@@ -123,12 +123,57 @@
           <div class="checkbox-group">
             <label><input type="checkbox" id="show-facets" checked> Show Facets</label>
             <label><input type="checkbox" id="show-wireframe"> Show Wireframe</label>
-            <label><input type="checkbox" id="show-light-rays" disabled> Light Rays (coming soon)</label>
+            <label><input type="checkbox" id="show-light-rays"> Light Rays</label>
+            <label><input type="checkbox" id="show-glints"> Sparkle accents</label>
+          </div>
+          <div id="ray-legend" class="ray-legend" hidden>
+            <span class="ray-incoming">Incoming</span>
+            <span class="ray-inside">Refracted</span>
+            <span class="ray-reflection">Internal reflection</span>
+            <span class="ray-exit">Exiting</span>
+            <p class="hint">Glowing paths show light entering, bending, reflecting, and exiting. Paths are illustrative and stop after eight internal reflections.</p>
+          </div>
+          <div class="slider-group">
+            <label for="transparency">Transparency: <span id="transparency-value">92</span>%</label>
+            <input type="range" id="transparency" min="0" max="100" value="92">
+            <p class="hint">Adjust transmission through the stone while preserving surface reflections.</p>
           </div>
         </fieldset>
 
         <fieldset class="control-group">
+          <legend>Brilliance &amp; Refraction</legend>
+          <div class="slider-group">
+            <label for="brilliance">Brilliance: <span id="brilliance-value">65</span>%</label>
+            <input type="range" id="brilliance" min="0" max="100" value="65">
+            <p class="hint">Tune the polish and contrast of natural facet reflections.</p>
+          </div>
+          <div class="slider-group">
+            <label for="refraction">Refraction: <span id="refraction-value">100</span>%</label>
+            <input type="range" id="refraction" min="0" max="100" value="100">
+            <p class="hint">Trace light through the facet volume with material-specific refraction and absorption.</p>
+          </div>
+          <label for="render-quality">Render quality</label>
+          <select id="render-quality">
+            <option value="4">Interactive — 4 internal bounces</option>
+            <option value="8" selected>Studio — 8 internal bounces</option>
+            <option value="10">Fine — 10 internal bounces</option>
+          </select>
+          <div class="checkbox-group"><label><input type="checkbox" id="show-dispersion"> Color dispersion</label></div>
+          <p class="hint">Dispersion traces red, green, and blue separately and may reduce performance. These synthetic cuts are visual previews, not certified light-performance measurements.</p>
+        </fieldset>
+
+        <fieldset class="control-group">
           <legend>Lighting</legend>
+          <label for="lighting-preset">Lighting setup</label>
+          <select id="lighting-preset">
+            <option value="studio">Studio — balanced highlights</option>
+            <option value="daylight">Daylight — soft and open</option>
+            <option value="contrast">Contrast — stronger facet definition</option>
+          </select>
+          <div class="slider-group">
+            <label for="light-direction">Light direction: <span id="light-direction-value">0</span>°</label>
+            <input type="range" id="light-direction" min="0" max="360" step="5" value="0">
+          </div>
           <div class="slider-group">
             <label for="brightness">Brightness: <span id="brightness-value">100</span>%</label>
             <input type="range" id="brightness" min="0" max="200" value="100" aria-label="Adjust brightness">
@@ -171,6 +216,8 @@
 
   <!-- Three.js served locally to avoid CDN/Tracking Prevention issues -->
   <script src="three.min.js"></script>
+  <script src="optics-effects.js"></script>
+  <script src="studio-renderer.js"></script>
   <script src="visualizer.js"></script>
 </body>
 </html>

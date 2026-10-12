@@ -40,6 +40,18 @@ Browser security blocks file:// protocol from accessing external resources and u
 
 ## Production
 
+### Renderer checks
+
+The studio renderer needs WebGL 2 or WebGL 1 with floating-point texture support. Its Studio and Fine quality settings trace more internal bounces; use Interactive on slower devices. Still views progressively refine over 12 subpixel samples. Rotation uses a lower-resolution preview, returning to full resolution when still.
+
+With Node.js installed, run the dependency-free geometry and refraction checks:
+
+```bash
+node tests/renderer-check.cjs
+```
+
+The checks cover default and extreme parameters for all eight cuts, closed surfaces, convex optical volumes, outward normals, and Snell refraction. Browser checks are still necessary to verify GPU shaders and visual appearance.
+
 Deploy to any static host (GitHub Pages, Netlify, Vercel, plain web server). No build step or backend required—it's all client-side.
 
 ## Troubleshooting
