@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "outputDirectory": "images/renders",
+  "size": {
+    "width": 384,
+    "height": 384
+  },
+  "camera": {
+    "type": "perspective",
+    "fov": 35,
+    "rotationRadians": [
+      1.05,
+      0.35,
+      0
+    ],
+    "distanceFactor": 1.12
+  },
+  "lighting": {
+    "preset": "studio",
+    "directionDegrees": 0,
+    "brightness": 1
+  },
+  "material": {
+    "transmission": 0.92,
+    "brilliance": 0.65,
+    "refractionStrength": 1,
+    "dispersion": true
+  },
+  "quality": {
+    "internalBounces": 10,
+    "samples": 12,
+    "pixelRatio": 1
+  },
+  "background": {
+    "alpha": 0
+  },
+  "wireframe": {
+    "edgeThresholdDegrees": 1,
+    "stroke": "#f2eddf",
+    "outline": "#173b32",
+    "strokeWidth": 1.1,
+    "outlineWidth": 2.4
+  }
+}

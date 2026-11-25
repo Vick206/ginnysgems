@@ -1,0 +1,142 @@
+<!-- Archived sample interface; reference only. Not loaded by the public site. -->
+
+  <section class="visualizer-intro" aria-label="About the gemstone visualizer">
+    <p>Explore brilliant, emerald, cushion, oval, radiant, Asscher, marquise, and pear gemstone cuts in 3D. Drag to rotate, scroll to zoom, and adjust cut parameters to compare shapes. Use transparency and light rays to explore refraction and internal reflection in these illustrative previews. GemCAD import is in development.</p>
+  </section>
+  <main class="visualizer-container">
+    <section class="viewer-section">
+      <div class="canvas-wrapper">
+        <canvas id="gem-canvas"></canvas>
+        <div class="loading-message" id="loading">
+          <p>Preparing visualizer...</p>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="control-group">
+          <label for="file-upload">Load GemCAD File:</label>
+          <input type="file" id="file-upload" accept=".gem,.txt,.csv" aria-label="Upload gemcad file" disabled>
+          <p class="hint">GemCAD import is in development. Explore parametric cut previews below.</p>
+        </div>
+
+        <div class="control-group">
+          <label for="gem-select">Or select from catalog:</label>
+          <select id="gem-select" aria-label="Select gemstone from catalog">
+            <option value="">Choose a stone...</option>
+            <option value="emerald-001">Columbian Emerald - 12.4ct</option>
+            <option value="sapphire-001">Ceylon Sapphire - 8.7ct</option>
+            <option value="diamond-001">Champagne Diamond - 5.2ct</option>
+            <option value="ruby-001">Burmese Ruby - 3.5ct</option>
+            <option value="topaz-001">Imperial Topaz - 9.1ct</option>
+            <option value="aquamarine-001">Aquamarine - 15.3ct</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="cut-select">Cut Style:</label>
+          <select id="cut-select" aria-label="Select gem cut">
+            <option value="brilliant">Brilliant (Round)</option>
+            <option value="emerald">Emerald</option>
+            <option value="cushion">Cushion</option>
+            <option value="oval">Oval</option>
+            <option value="radiant">Radiant</option>
+            <option value="asscher">Asscher</option>
+            <option value="marquise">Marquise</option>
+            <option value="pear">Pear</option>
+          </select>
+        </div>
+
+        <fieldset class="control-group" id="cut-parameters">
+          <legend>Cut Parameters</legend>
+          <div id="params-container"></div>
+        </fieldset>
+
+        <fieldset class="control-group">
+          <legend>Display Options</legend>
+          <div class="checkbox-group">
+            <label><input type="checkbox" id="show-facets" checked> Show Facets</label>
+            <label><input type="checkbox" id="show-wireframe"> Show Wireframe</label>
+            <label><input type="checkbox" id="show-light-rays"> Light Rays</label>
+            <label><input type="checkbox" id="show-glints"> Sparkle accents</label>
+          </div>
+          <div id="ray-legend" class="ray-legend" hidden>
+            <span class="ray-incoming">Incoming</span>
+            <span class="ray-inside">Refracted</span>
+            <span class="ray-reflection">Internal reflection</span>
+            <span class="ray-exit">Exiting</span>
+            <p class="hint">Glowing paths show light entering, bending, reflecting, and exiting. Paths are illustrative and stop after eight internal reflections.</p>
+          </div>
+          <div class="slider-group">
+            <label for="transparency">Transparency: <span id="transparency-value">92</span>%</label>
+            <input type="range" id="transparency" min="0" max="100" value="92">
+            <p class="hint">Adjust transmission through the stone while preserving surface reflections.</p>
+          </div>
+        </fieldset>
+
+        <fieldset class="control-group">
+          <legend>Brilliance &amp; Refraction</legend>
+          <div class="slider-group">
+            <label for="brilliance">Brilliance: <span id="brilliance-value">65</span>%</label>
+            <input type="range" id="brilliance" min="0" max="100" value="65">
+            <p class="hint">Tune the polish and contrast of natural facet reflections.</p>
+          </div>
+          <div class="slider-group">
+            <label for="refraction">Refraction: <span id="refraction-value">100</span>%</label>
+            <input type="range" id="refraction" min="0" max="100" value="100">
+            <p class="hint">Trace light through the facet volume with material-specific refraction and absorption.</p>
+          </div>
+          <label for="render-quality">Render quality</label>
+          <select id="render-quality">
+            <option value="4">Interactive — 4 internal bounces</option>
+            <option value="8" selected>Studio — 8 internal bounces</option>
+            <option value="10">Fine — 10 internal bounces</option>
+          </select>
+          <div class="checkbox-group"><label><input type="checkbox" id="show-dispersion"> Color dispersion</label></div>
+          <p class="hint">Dispersion traces red, green, and blue separately and may reduce performance. These synthetic cuts are visual previews, not certified light-performance measurements.</p>
+        </fieldset>
+
+        <fieldset class="control-group">
+          <legend>Lighting</legend>
+          <label for="lighting-preset">Lighting setup</label>
+          <select id="lighting-preset">
+            <option value="studio">Studio — balanced highlights</option>
+            <option value="daylight">Daylight — soft and open</option>
+            <option value="contrast">Contrast — stronger facet definition</option>
+          </select>
+          <div class="slider-group">
+            <label for="light-direction">Light direction: <span id="light-direction-value">0</span>°</label>
+            <input type="range" id="light-direction" min="0" max="360" step="5" value="0">
+          </div>
+          <div class="slider-group">
+            <label for="brightness">Brightness: <span id="brightness-value">100</span>%</label>
+            <input type="range" id="brightness" min="0" max="200" value="100" aria-label="Adjust brightness">
+          </div>
+          <div class="slider-group">
+            <label for="rotation-speed">Auto Rotation:</label>
+            <input type="range" id="rotation-speed" min="0" max="100" value="0" aria-label="Adjust rotation speed">
+          </div>
+        </fieldset>
+
+        <div class="control-group">
+          <button id="reset-view" class="button-secondary">Reset View</button>
+          <button id="download-data" class="button-secondary">Download Specs</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="info-section">
+      <div class="info-panel">
+        <h2>Stone Information</h2>
+        <div id="stone-info" class="info-content">
+          <p class="placeholder">Select a stone to view its specifications and facet data.</p>
+        </div>
+      </div>
+
+      <div class="info-panel">
+        <h2>Facet Breakdown</h2>
+        <div id="facet-data" class="info-content">
+          <p class="placeholder">Facet information will appear here when a stone is loaded.</p>
+        </div>
+      </div>
+    </section>
+    </main>

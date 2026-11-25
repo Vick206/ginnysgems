@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "recipe": {
+    "schemaVersion": 1,
+    "outputDirectory": "images/renders",
+    "size": {
+      "width": 384,
+      "height": 384
+    },
+    "camera": {
+      "type": "perspective",
+      "fov": 35,
+      "rotationRadians": [
+        1.05,
+        0.35,
+        0
+      ],
+      "distanceFactor": 1.12
+    },
+    "lighting": {
+      "preset": "studio",
+      "directionDegrees": 0,
+      "brightness": 1
+    },
+    "material": {
+      "transmission": 0.92,
+      "brilliance": 0.65,
+      "refractionStrength": 1,
+      "dispersion": true
+    },
+    "quality": {
+      "internalBounces": 10,
+      "samples": 12,
+      "pixelRatio": 1
+    },
+    "background": {
+      "alpha": 0
+    },
+    "wireframe": {
+      "edgeThresholdDegrees": 1,
+      "stroke": "#f2eddf",
+      "outline": "#173b32",
+      "strokeWidth": 1.1,
+      "outlineWidth": 2.4
+    }
+  },
+  "inputs": {
+    ".gitattributes": "9f478e1582f4095fb967b5b46b1256f6012eda241df57614c07f30ff89298034",
+    "catalog.js": "021a391efff725b4450758a1cbeb198b9f389f3743c5b523c21bd0a40079bca3",
+    "collection-viewer.js": "65210d7a1cc969b9c05772998083119e60b58cb5305fde06ef39e9e1fcb79c5e",
+    "cut-geometry.js": "9d00cb2772c97c56180a6c4b28ff2c87ed4dbbe57d874666dcd8ee1e7be1cc25",
+    "data/cuts/mini-portuguese.json": "7d6e973d1bbcbedd2f670424f81c0d3ec329f394801c4051cc77dab5c91392e4",
+    "data/cuts/peridot-round.json": "86306e5b321b5ef85630262fb275bf859250a6b5b4b18f86fdac650007fb4f5e",
+    "data/cuts/sophia-dome.json": "9ca8308f62ec18fb64a0a900d414b983a58cffa7623374f91a65cdb23445cf19",
+    "data/cuts/squartuguese.json": "d5c0586382ab99313ce98b6faa02149803d78defdd1c60ae1069437dde02cd94",
+    "optics-effects.js": "ce83d1cc6eaf6ea876a8aa4a2bd07263554ebd4faf6751f52839aaa532aec1dc",
+    "render-bake.json": "95458269fb1770d035291f9d7ce31b3ceffd9143bfb2812db786d2ade90416d4",
+    "studio-renderer.js": "c2ef83202524ffc587a28a79ef698c61a95ecde1f4dc98e63c4f8656384d4dea",
+    "three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+    "tools/bake-previews.cjs": "49542fda15b6245bcf73077acd6baf1c1b9831b53177ec70732967823448df67",
+    "visualizer.html": "228b121c0b60f247ec91f1683991030856eac1abe4a7e3d56311bf7fe0c27646",
+    "visualizer.js": "3f1c16f69b9a479bc807ce770e574897267e5944ee226016e7d60ead7a1b2e4c"
+  },
+  "inputHash": "93f7e87a1233c9658f09aee1d010b7a48c90f3319219dfda28e0973969959f34",
+  "jobs": [
+    {
+      "stoneId": "peridot-001",
+      "cutId": "peridot-round",
+      "cutFile": "data/cuts/peridot-round.json",
+      "material": {
+        "color": 9087020,
+        "ior": 1.65
+      },
+      "render": "images/renders/peridot-001.png",
+      "wireframe": "images/renders/peridot-001-wireframe.svg",
+      "facets": 73,
+      "outputHashes": {
+        "images/renders/peridot-001.png": "a3e5cf6ec518fdd1af2b27290b3a9fd5c36da61ec1954c4c74fffb12923b74cf",
+        "images/renders/peridot-001-wireframe.svg": "d7794eb2ecfcaca32a7c565cd60c0cc21fb5bb886f6f302dcec42e2ce806a041"
+      }
+    },
+    {
+      "stoneId": "garnet-red-001",
+      "cutId": "mini-portuguese",
+      "cutFile": "data/cuts/mini-portuguese.json",
+      "material": {
+        "color": 10368286,
+        "ior": 1.76
+      },
+      "render": "images/renders/garnet-red-001.png",
+      "wireframe": "images/renders/garnet-red-001-wireframe.svg",
+      "facets": 113,
+      "outputHashes": {
+        "images/renders/garnet-red-001.png": "ec80751078b19d0eb8f76beb3bf0166115f3bbeae9334e0b018ab04aeead33c3",
+        "images/renders/garnet-red-001-wireframe.svg": "4ab38548c712c35e709d72ceca9d3afc9610f8842be193af2a5e26b3cc54457e"
+      }
+    },
+    {
+      "stoneId": "ruby-studio-001",
+      "cutId": "mini-portuguese",
+      "cutFile": "data/cuts/mini-portuguese.json",
+      "material": {
+        "color": 13050694,
+        "ior": 1.766
+      },
+      "render": "images/renders/ruby-studio-001.png",
+      "wireframe": "images/renders/ruby-studio-001-wireframe.svg",
+      "facets": 113,
+      "outputHashes": {
+        "images/renders/ruby-studio-001.png": "30051f3e44809046a85809c36fa90fe153bfd71af0a060e3260226ec4b5a3dca",
+        "images/renders/ruby-studio-001-wireframe.svg": "4ab38548c712c35e709d72ceca9d3afc9610f8842be193af2a5e26b3cc54457e"
+      }
+    },
+    {
+      "stoneId": "cz-001",
+      "cutId": "squartuguese",
+      "cutFile": "data/cuts/squartuguese.json",
+      "material": {
+        "color": 15196104,
+        "ior": 2.15
+      },
+      "render": "images/renders/cz-001.png",
+      "wireframe": "images/renders/cz-001-wireframe.svg",
+      "facets": 85,
+      "outputHashes": {
+        "images/renders/cz-001.png": "288cf1edb0d8c97e1fe5905ccbb3f6f6f42a6b392161204ff3eda21890ebf06c",
+        "images/renders/cz-001-wireframe.svg": "93537270277f798efcc446dad51fbb295c3b0fc7813c993118c57058d9d8aa16"
+      }
+    },
+    {
+      "stoneId": "garnet-ghana-001",
+      "cutId": "sophia-dome",
+      "cutFile": "data/cuts/sophia-dome.json",
+      "material": {
+        "color": 8798575,
+        "ior": 1.76
+      },
+      "render": "images/renders/garnet-ghana-001.png",
+      "wireframe": "images/renders/garnet-ghana-001-wireframe.svg",
+      "facets": 97,
+      "outputHashes": {
+        "images/renders/garnet-ghana-001.png": "b4e1f0257020a92166f2dbd2735d47be48466b16785d7f613c2074d4ae8a46de",
+        "images/renders/garnet-ghana-001-wireframe.svg": "ca5bc751d14dbc603cca638d89ccfbc62c883171025ef284706f8abcdf93f88b"
+      }
+    }
+  ],
+  "skipped": [
+    {
+      "stoneId": "sunstone-001",
+      "reason": "pattern-required"
+    }
+  ],
+  "rendererEnvironment": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.0.0 Safari/537.36"
+}

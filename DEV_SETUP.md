@@ -65,3 +65,21 @@ Deploy to any static host (GitHub Pages, Netlify, Vercel, plain web server). No 
 - Open DevTools Console (F12)
 - Check for JavaScript errors
 - Verify Three.js loaded: type `THREE` in console—should return an object
+
+## Studio collection checks
+
+Run `node tests/catalog-check.cjs` for the real catalog, photo paths, source-plane geometry and peridot reconstruction checks. The existing renderer check still covers the retained generic generators. Serve over HTTP; `collection-viewer.js` fetches normalized JSON when a render is requested. WebGL is loaded on demand and photographs remain usable without it.
+
+Exclude `TemporaryResources/`, `tmp/`, `.git/` and private local files from any deployment that copies the working directory. Git-based deployment naturally omits ignored sources. Only the selected processed photos, cut JSON and render thumbnails belong in the published collection.
+
+For binary GEM imports, use `node tools/decode-gem.cjs input.gem output.json cut-id`. The source need not be served publicly. Run `node tests/gem-decoder-check.cjs`; see GEM_FORMAT.md for the supported layout and unsupported preform sections.
+
+For the Mini-Portuguese PDF reconstruction, run `node tools/build-mini-portuguese.cjs` and `node tests/mini-portuguese-check.cjs`. Ruby and red garnet share geometry, with separate material settings; sunstone remains photo-only. The plan documents inferred offsets and source discrepancies.
+
+## Overlay baking
+
+Run `node tools/bake-previews.cjs` with Node 22+ and Chrome/Edge installed. Set `BAKE_BROWSER` if the executable is elsewhere. This uses one hidden browser page and one renderer sequentially; no npm packages are required. Run `node tools/bake-previews.cjs --check` before deployment, plus `node tests/bake-check.cjs`. Serve SVG with `image/svg+xml`. See RENDER_BAKING.md for the export contract.
+
+## Render lifecycle checks
+
+Run `node tests/render-performance-check.cjs` for moving-frame compositing, settled GPU idle and animation suspension/resumption. The generic geometry test now loads its reference implementation from `legacy/parametric-previews.js`; these demos are not loaded by the public site. See PERFORMANCE_REVIEW.md for measurements and remaining profiling limits.

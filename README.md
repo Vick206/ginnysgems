@@ -128,3 +128,38 @@ For inquiries about custom stones, trade partnerships, or bespoke jewelry:
 ---
 
 Built with care by Ginny's Gemstones
+
+## Studio photo catalog
+
+The public showcase keeps the original card design and now reads six studio stone records from `catalog.js`. Photos are responsive 600/1200px JPEGs, cropped from the supplied originals without embedded source metadata. Photo identities remain provisional; unverified weights and dimensions stay null.
+
+`visualizer.html` uses the same catalog and automatically loads the selected cut render. Sophia Dome is reconstructed from 97 explicit source facet planes. The 73-facet peridot is a diagram reconstruction with an inferred girdle thickness and a documented 0.5% table-ratio discrepancy. Squartuguese is decoded directly from its binary GEM file into 85 source facets. The ruby and red garnet share a 113-facet Mini-Portuguese PDF reconstruction with distinct material settings. All five have static render thumbnails and interactive renders. Sunstone stays photo-only pending its pattern. Optical material settings are representative, not measured.
+
+- `cut-geometry.js`: convex half-space clipping, design facet identities and source optical planes.
+- `data/cuts/`: normalized Sophia Dome, peridot, Squartuguese and Mini-Portuguese design data.
+- `collection-viewer.js`: photo/model selection, lazy renderer loading, keyboard controls and fallback behavior.
+- `legacy/parametric-previews.js`, `legacy/showcase.html` and `legacy/visualizer.html`: retained demo catalog and interface; generic cut generators and their legacy initializer are preserved in `legacy/parametric-previews.js` for reference and tests. The renderer feature list above includes those legacy capabilities.
+
+Run `node tests/catalog-check.cjs`, `node tests/renderer-check.cjs`, `node tests/gem-decoder-check.cjs`, and `node tests/mini-portuguese-check.cjs`. Serve the repository over HTTP for cut-data loading. See [PHOTO_RENDER_PLAN.md](PHOTO_RENDER_PLAN.md) for remaining source dependencies. `TemporaryResources/` is ignored working material and must be excluded from directory-based deployments.
+
+The reusable binary converter is `tools/decode-gem.cjs`; see [GEM_FORMAT.md](GEM_FORMAT.md) for usage, recovered fields, validation and supported-format limits.
+
+Regenerate the shared Mini-Portuguese design with `node tools/build-mini-portuguese.cjs`. Plane offsets are reconstructed from the PDF drawing, with source proportions and limitations documented in PHOTO_RENDER_PLAN.md.
+
+## Baked photo overlays
+
+The gallery displays a transparent cut render in each photo's upper right and a wireframe in its upper left. These are static assets, with no gallery WebGL instances. Run `node tools/bake-previews.cjs` to regenerate five PNG/SVG pairs, then `node tools/bake-previews.cjs --check` and `node tests/bake-check.cjs`. [RENDER_BAKING.md](RENDER_BAKING.md) documents the recipe and machine-readable manifest for another renderer/tool.
+
+The visualizer is render-only: it loads the selected stone automatically, reuses one renderer when switching stones, and falls back to a baked render if WebGL fails. Sunstone shows its pending-design message. The storefront retains the photo overlays.
+
+Visualizer display defaults are Fine quality (10 internal bounces) with color dispersion enabled. Auto-rotation is a checkbox at one turn per 40 seconds, on by default. Brilliance and refraction use fixed internal settings; their sliders are removed from the public controls. Baked previews use the same quality/dispersion defaults and remain stationary.
+
+The visualizer opens and resets to a side profile, with auto-rotation enabled at one turn per 40 seconds. The quality card is removed; Fine quality (10 internal bounces) is fixed internally. Baked photo overlays retain their explicit camera recipe.
+
+The visualizer now combines the stone summary, design/material facts and basic facet count in the gem-name card. One generic disclaimer lives in the render card and remains identical across catalog selections.
+
+## Performance cleanup
+
+See [PERFORMANCE_REVIEW.md](PERFORMANCE_REVIEW.md) for measured loading/render-pass changes and the dependency inventory. Hidden/offscreen rendering now pauses, shared-cut geometry and JSON are reused, and archived demo interfaces/modules are excluded from public loading. Run `node tests/render-performance-check.cjs` alongside the geometry and bake checks.
+
+The follow-up code review also archives legacy-only renderer methods and CSS, removes obsolete DOM/styles and redundant scrolling code, and releases unsupported WebGL contexts before retry. The contact form currently prepares a local confirmation only; a delivery backend is not implemented. See PERFORMANCE_REVIEW.md.
