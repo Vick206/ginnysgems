@@ -6,7 +6,6 @@ const byId=id=>document.getElementById(id);
 const automaticRendering=!new URLSearchParams(location.search).has('bake');
 const pendingReasons={
   'offsets-required':'The design angles are documented. A matching model is in preparation while facet offsets are reconstructed and checked.',
-  'pattern-required':'The sunstone pattern is still required. The finished design is needed before a render can be shown.',
 };
 for(const stone of STUDIO_CATALOG){const option=document.createElement('option');option.value=stone.id;option.textContent=`${stone.name} — ${stone.cutName}`;collectionSelect.append(option);}
 

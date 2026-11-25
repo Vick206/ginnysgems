@@ -1,6 +1,6 @@
 # Reproducible photo overlays
 
-Each finished-stone photo has a transparent wireframe in the upper left and a transparent shaded cut render in the upper right. They remain separate image assets so photos can be replaced without rendering again. Labels distinguish design illustrations from the real photograph. Sunstone has no overlays until its design exists.
+Each finished-stone photo has a transparent wireframe in the upper left and a transparent shaded cut render in the upper right. They remain separate image assets so photos can be replaced without rendering again. Labels distinguish design illustrations from the real photograph.
 
 The storefront creates no WebGL contexts and does not load Three.js. Its cards load static PNG/SVG images. The visualizer page shows no photograph and automatically loads one interactive render for the selected stone. If WebGL is unavailable, its baked cut render remains visible.
 
@@ -17,7 +17,7 @@ node tools/bake-previews.cjs --check
 node tests/bake-check.cjs
 ```
 
-The command starts a temporary local HTTP server and a hidden headless browser. It visits the visualizer with `?bake=1` to suppress automatic startup and reuses one renderer sequentially for all five ready stones, then closes the browser and server. Raw email/reference folders are blocked by this bake server. The private originals are never needed at bake time: normalized cut JSON and the shared catalog are the inputs.
+The command starts a temporary local HTTP server and a hidden headless browser. It visits the visualizer with `?bake=1` to suppress automatic startup and reuses one renderer sequentially for all six ready stones, then closes the browser and server. Raw email/reference folders are blocked by this bake server. The private originals are never needed at bake time: normalized cut JSON and the shared catalog are the inputs.
 
 The recipe in `render-bake.json` fixes a 384 x 384 transparent canvas, perspective camera, rotation in radians, distance relative to the geometry's bounding sphere, studio lighting, transmission, brilliance, refraction, bounce limit, 12 accumulation samples and pixel ratio 1. Sparkle, illustrative rays and auto-rotation are disabled during baking. Color dispersion is enabled and Fine quality uses 10 internal bounces, matching the visualizer defaults. The existing optical shader still uses its lighting environment inside the gem; the exported image background has zero alpha.
 
@@ -45,9 +45,9 @@ The recipe and manifest make the work reproducible from source. Pixel-identical 
 
 `--check` is fast and opens no browser. It fails if a cut, catalog, recipe, renderer dependency or output asset has changed since the bake. Run it in CI before deployment. After adjusting inputs, rerun the bake and commit the resulting PNG/SVG files and manifest together. Layout/CSS changes do not require rebaking.
 
-Future automation can compare per-job hashes to bake only affected stones, or invoke a different renderer adapter against the same job contract. The current batch is small and deliberately rebakes all five jobs in one pass. The gallery always serves the finished images; no rendering work is shifted to visitors.
+Future automation can compare per-job hashes to bake only affected stones, or invoke a different renderer adapter against the same job contract. The current batch is small and deliberately rebakes all six jobs in one pass. The gallery always serves the finished images; no rendering work is shifted to visitors.
 
-Tests verify manifest/input/output consistency, PNG dimensions and alpha pixels, nonempty gem silhouettes, deterministic SVG generation, and the photo-only sunstone. Browser checks verify both upper corners, all ten overlays, mobile layouts, zero gallery WebGL instances and the optional interactive viewer. Serve `.svg` with `image/svg+xml` when previewing or deploying the site.
+Tests verify manifest/input/output consistency, PNG dimensions and alpha pixels, nonempty gem silhouettes, deterministic SVG generation, and the Snowfall cut assigned to sunstone. Browser checks verify both upper corners, all twelve overlays, mobile layouts, zero gallery WebGL instances and the optional interactive viewer. Serve `.svg` with `image/svg+xml` when previewing or deploying the site.
 
 Source/material switching and centered geometry now share implementation with the live renderer. During each batch, the shared Mini-Portuguese geometry and its wireframe are reused for ruby/garnet. The exported job contract and image appearance are unchanged.
 

@@ -133,7 +133,7 @@ Built with care by Ginny's Gemstones
 
 The public showcase keeps the original card design and now reads six studio stone records from `catalog.js`. Photos are responsive 600/1200px JPEGs, cropped from the supplied originals without embedded source metadata. Photo identities remain provisional; unverified weights and dimensions stay null.
 
-`visualizer.html` uses the same catalog and automatically loads the selected cut render. Sophia Dome is reconstructed from 97 explicit source facet planes. The 73-facet peridot is a diagram reconstruction with an inferred girdle thickness and a documented 0.5% table-ratio discrepancy. Squartuguese is decoded directly from its binary GEM file into 85 source facets. The ruby and red garnet share a 113-facet Mini-Portuguese PDF reconstruction with distinct material settings. All five have static render thumbnails and interactive renders. Sunstone stays photo-only pending its pattern. Optical material settings are representative, not measured.
+`visualizer.html` uses the same catalog and automatically loads the selected cut render. Sophia Dome is reconstructed from 97 explicit source facet planes. The 73-facet peridot is a diagram reconstruction with an inferred girdle thickness and a documented 0.5% table-ratio discrepancy. Squartuguese is decoded directly from its binary GEM file into 85 source facets. The ruby and red garnet share a 113-facet Mini-Portuguese PDF reconstruction with distinct material settings. Sunstone uses the 46 source facet planes from Michael Holmes?s Snowfall design. All six stones have static render thumbnails and interactive renders. Optical material settings are representative, not measured.
 
 - `cut-geometry.js`: convex half-space clipping, design facet identities and source optical planes.
 - `data/cuts/`: normalized Sophia Dome, peridot, Squartuguese and Mini-Portuguese design data.
@@ -148,9 +148,9 @@ Regenerate the shared Mini-Portuguese design with `node tools/build-mini-portugu
 
 ## Baked photo overlays
 
-The gallery displays a transparent cut render in each photo's upper right and a wireframe in its upper left. These are static assets, with no gallery WebGL instances. Run `node tools/bake-previews.cjs` to regenerate five PNG/SVG pairs, then `node tools/bake-previews.cjs --check` and `node tests/bake-check.cjs`. [RENDER_BAKING.md](RENDER_BAKING.md) documents the recipe and machine-readable manifest for another renderer/tool.
+The gallery displays a transparent cut render in each photo's upper right and a wireframe in its upper left. These are static assets, with no gallery WebGL instances. Run `node tools/bake-previews.cjs` to regenerate six PNG/SVG pairs, then `node tools/bake-previews.cjs --check` and `node tests/bake-check.cjs`. [RENDER_BAKING.md](RENDER_BAKING.md) documents the recipe and machine-readable manifest for another renderer/tool.
 
-The visualizer is render-only: it loads the selected stone automatically, reuses one renderer when switching stones, and falls back to a baked render if WebGL fails. Sunstone shows its pending-design message. The storefront retains the photo overlays.
+The visualizer is render-only: it loads the selected stone automatically, reuses one renderer when switching stones, and falls back to a baked render if WebGL fails. The storefront retains the photo overlays.
 
 Visualizer display defaults are Fine quality (10 internal bounces) with color dispersion enabled. Auto-rotation is a checkbox at one turn per 40 seconds, on by default. Brilliance and refraction use fixed internal settings; their sliders are removed from the public controls. Baked previews use the same quality/dispersion defaults and remain stationary.
 

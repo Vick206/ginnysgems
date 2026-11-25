@@ -32,8 +32,7 @@ const projected=faces.flatMap(f=>f.vertices.map(([x,y])=>[318.95999-y*134.64,654
 for(const anchor of [[339.35999,699.35999],[351.84,685.91998],[307.44,705.83997],[300.72,693.35999]]){
   assert(Math.min(...projected.map(p=>Math.hypot(p[0]-anchor[0],p[1]-anchor[1])))<.36,'Profile disagrees with quantized PDF drawing');
 }
-const catalog=vm.runInContext('STUDIO_CATALOG',context),ruby=catalog.find(s=>s.id==='ruby-studio-001'),garnet=catalog.find(s=>s.id==='garnet-red-001'),sunstone=catalog.find(s=>s.id==='sunstone-001');
+const catalog=vm.runInContext('STUDIO_CATALOG',context),ruby=catalog.find(s=>s.id==='ruby-studio-001'),garnet=catalog.find(s=>s.id==='garnet-red-001');
 assert.equal(ruby.cutId,'mini-portuguese');assert.equal(garnet.cutId,ruby.cutId);
 assert(ruby.render&&garnet.render);assert.notEqual(ruby.ior,cut.designIor);assert.notEqual(ruby.color,garnet.color);
-assert.equal(sunstone.cutId,null);assert.equal(sunstone.render,null);
-console.log('Passed 113 Mini-Portuguese facets, PDF angles/indices, drawing profile, printed proportions, closed convex surface, optical planes, material separation, and photo-only sunstone.');
+console.log('Passed 113 Mini-Portuguese facets, PDF angles/indices, drawing profile, printed proportions, closed convex surface, optical planes, and material separation.');

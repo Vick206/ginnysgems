@@ -2,7 +2,8 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {checkBake,wireframeSvg,bakeInputs,sourceHash}=require('../tools/bake-previews.cjs');
 assert.equal(sourceHash(Buffer.from('first\r\nsecond\r\n')),sourceHash(Buffer.from('first\nsecond\n')),'Source hashes must be stable across Git line endings');
 const root=path.resolve(__dirname,'..'),manifest=checkBake();
-assert.equal(manifest.jobs.length,5);assert.equal(manifest.skipped.length,1);assert.equal(manifest.skipped[0].stoneId,'sunstone-001');
+assert.equal(manifest.jobs.length,6);assert.equal(manifest.skipped.length,0);
+assert.equal(manifest.jobs.find(job=>job.stoneId==='sunstone-001').cutId,'snowfall');
 const expected=bakeInputs();
 let invalid=structuredClone(manifest);invalid.jobs[0].render='images/renders/wrong.png';
 assert.throws(()=>checkBake(expected,invalid),/metadata mismatch/);
@@ -39,4 +40,4 @@ for(const job of manifest.jobs){
   assert.equal(svg,wireframeSvg(cut,manifest.recipe),'Wireframe must reproduce byte-for-byte');
   assert(!svg.includes('<rect'),'Wireframe background must be clear');
 }
-console.log('Passed five transparent RGBA renders, deterministic wireframe exports, recipe/output hashes, and skipped sunstone.');
+console.log('Passed six transparent RGBA renders, deterministic wireframe exports, and recipe/output hashes.');

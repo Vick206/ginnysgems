@@ -46,11 +46,12 @@
   },
   "inputs": {
     ".gitattributes": "9f478e1582f4095fb967b5b46b1256f6012eda241df57614c07f30ff89298034",
-    "catalog.js": "021a391efff725b4450758a1cbeb198b9f389f3743c5b523c21bd0a40079bca3",
-    "collection-viewer.js": "65210d7a1cc969b9c05772998083119e60b58cb5305fde06ef39e9e1fcb79c5e",
+    "catalog.js": "d9f8d354c70634cf309d2a17d9884266fd8aa2613be237ef8fef0a079b420a2f",
+    "collection-viewer.js": "a62ebcf57b951cafeac98e5514be64ec2ddd8f9f44eadf212ba399df53ef77b9",
     "cut-geometry.js": "9d00cb2772c97c56180a6c4b28ff2c87ed4dbbe57d874666dcd8ee1e7be1cc25",
     "data/cuts/mini-portuguese.json": "7d6e973d1bbcbedd2f670424f81c0d3ec329f394801c4051cc77dab5c91392e4",
     "data/cuts/peridot-round.json": "86306e5b321b5ef85630262fb275bf859250a6b5b4b18f86fdac650007fb4f5e",
+    "data/cuts/snowfall.json": "c042e1cfa341293553fbb1ad416220606265bc366cef135350f3a5d67124bc05",
     "data/cuts/sophia-dome.json": "9ca8308f62ec18fb64a0a900d414b983a58cffa7623374f91a65cdb23445cf19",
     "data/cuts/squartuguese.json": "d5c0586382ab99313ce98b6faa02149803d78defdd1c60ae1069437dde02cd94",
     "optics-effects.js": "ce83d1cc6eaf6ea876a8aa4a2bd07263554ebd4faf6751f52839aaa532aec1dc",
@@ -61,7 +62,7 @@
     "visualizer.html": "228b121c0b60f247ec91f1683991030856eac1abe4a7e3d56311bf7fe0c27646",
     "visualizer.js": "3f1c16f69b9a479bc807ce770e574897267e5944ee226016e7d60ead7a1b2e4c"
   },
-  "inputHash": "93f7e87a1233c9658f09aee1d010b7a48c90f3319219dfda28e0973969959f34",
+  "inputHash": "8d6aeb9ae433d3f83ab5374f2fbc193803e79dad158dfb329d2a2cc77b6919e4",
   "jobs": [
     {
       "stoneId": "peridot-001",
@@ -142,13 +143,24 @@
         "images/renders/garnet-ghana-001.png": "b4e1f0257020a92166f2dbd2735d47be48466b16785d7f613c2074d4ae8a46de",
         "images/renders/garnet-ghana-001-wireframe.svg": "ca5bc751d14dbc603cca638d89ccfbc62c883171025ef284706f8abcdf93f88b"
       }
-    }
-  ],
-  "skipped": [
+    },
     {
       "stoneId": "sunstone-001",
-      "reason": "pattern-required"
+      "cutId": "snowfall",
+      "cutFile": "data/cuts/snowfall.json",
+      "material": {
+        "color": 13804413,
+        "ior": 1.54
+      },
+      "render": "images/renders/sunstone-001.png",
+      "wireframe": "images/renders/sunstone-001-wireframe.svg",
+      "facets": 46,
+      "outputHashes": {
+        "images/renders/sunstone-001.png": "c2fb2e5228f4b5d6f6d22ea9f30edd16cbabefd2cd0839980dd633099ed19f5c",
+        "images/renders/sunstone-001-wireframe.svg": "f785c6376100b93454685672a16eb5692a4e2534229ed87120b4fef4e8476ace"
+      }
     }
   ],
+  "skipped": [],
   "rendererEnvironment": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.0.0 Safari/537.36"
 }
