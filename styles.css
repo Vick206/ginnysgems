@@ -12,4 +12,8 @@
 .photo-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.8rem;padding:1rem;color:#58665e;text-align:center;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;background:radial-gradient(ellipse at center,#eeeadf,#ded8cb)}
 .photo-mark{font-size:2.8rem;line-height:1;color:#8f9a8c}
 .showcase-photo.has-photo .photo-placeholder{display:none}
+.catalog-note{font-size:.8rem;color:#596461;max-width:680px}.render-preview{display:flex;flex-direction:column;gap:.4rem;margin-top:1rem;font-size:.75rem;color:#4b5954}.gallery-item{min-width:0}
 @media(min-width:541px) and (max-width:850px){.gallery{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Baked image overlays: no gallery WebGL contexts or opaque image panels. */
+.showcase-photo,.collection-photo{position:relative;isolation:isolate}.photo-overlay{position:absolute;top:2%;width:29%;margin:0;z-index:2;pointer-events:none;text-align:center}.photo-overlay-wireframe{left:1%}.photo-overlay-render{right:1%}.photo-overlay img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:contain;background:transparent!important;border:0;border-radius:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.28))}.photo-overlay figcaption{font:600 clamp(8px,.7vw,11px)/1.2 "DM Sans",sans-serif;letter-spacing:.04em;color:#fff;text-shadow:0 1px 3px #091211,0 0 2px #091211;margin-top:-2px}.collection-photo>.showcase-image{display:block;width:100%;height:auto}.collection-photo>.photo-overlay img{width:100%;height:auto;aspect-ratio:1}

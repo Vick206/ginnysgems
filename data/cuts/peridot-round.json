@@ -1,0 +1,160 @@
+{
+  "id": "peridot-round",
+  "name": "Peridot Round Brilliant",
+  "designer": "Jim Perkins",
+  "copyright": "February 2019",
+  "source": "PeridotDiagram.jpg",
+  "designIor": 1.65,
+  "indexGear": 96,
+  "facetCount": 73,
+  "ratios": {
+    "lengthWidth": 1,
+    "tableWidth": 0.57,
+    "pavilionWidth": 0.42,
+    "crownWidth": 0.151
+  },
+  "status": "source-reconstruction",
+  "tiers": [
+    {
+      "label": "P1",
+      "angle": -41.5,
+      "indices": [
+        3,
+        9,
+        15,
+        21,
+        27,
+        33,
+        39,
+        45,
+        51,
+        57,
+        63,
+        69,
+        75,
+        81,
+        87,
+        93
+      ],
+      "distance": 0.3249439948950371
+    },
+    {
+      "label": "G",
+      "angle": 90,
+      "indices": [
+        3,
+        9,
+        15,
+        21,
+        27,
+        33,
+        39,
+        45,
+        51,
+        57,
+        63,
+        69,
+        75,
+        81,
+        87,
+        93
+      ],
+      "distance": 0.4903926402016152
+    },
+    {
+      "label": "P3",
+      "angle": -40,
+      "indices": [
+        96,
+        12,
+        24,
+        36,
+        48,
+        60,
+        72,
+        84
+      ],
+      "distance": 0.32173866610997076
+    },
+    {
+      "label": "C1",
+      "angle": 41,
+      "indices": [
+        3,
+        9,
+        15,
+        21,
+        27,
+        33,
+        39,
+        45,
+        51,
+        57,
+        63,
+        69,
+        75,
+        81,
+        87,
+        93
+      ],
+      "distance": 0.3368207109592183
+    },
+    {
+      "label": "C2",
+      "angle": 35,
+      "indices": [
+        96,
+        12,
+        24,
+        36,
+        48,
+        60,
+        72,
+        84
+      ],
+      "distance": 0.3031712590613029
+    },
+    {
+      "label": "C3",
+      "angle": 20.5,
+      "indices": [
+        6,
+        18,
+        30,
+        42,
+        54,
+        66,
+        78,
+        90
+      ],
+      "distance": 0.2519355448467198
+    },
+    {
+      "label": "T",
+      "angle": 0,
+      "indices": [
+        96
+      ],
+      "distance": 0.17099999999999999
+    }
+  ],
+  "note": "Reconstruction, not measured stone geometry. Derived table ratio differs from the diagram by approximately 0.5%; preserve this discrepancy rather than adjusting the source angles. Girdle thickness is inferred.",
+  "sourceTitle": "Peridot Round Brilliant ? Jim Perkins (2019)",
+  "assumptions": {
+    "width": 1,
+    "girdleThickness": 0.02,
+    "girdleThicknessBasis": "Inferred to reproduce the printed normalized volume; no girdle thickness is specified.",
+    "crownMeet": "C2 at girdle vertices; C3 through C1/C1/C2 intersections",
+    "pavilionMeet": "P1 preform TCP; P3 TCP at P/W 0.420"
+  },
+  "validation": {
+    "facetCount": 73,
+    "tableWidth": 0.5672369753,
+    "printedTableWidth": 0.57,
+    "tableWidthDifference": -0.0027630247,
+    "crownWidth": 0.151,
+    "pavilionWidth": 0.42,
+    "volumeWidthCubed": 0.200997,
+    "printedVolumeWidthCubed": 0.201
+  }
+}

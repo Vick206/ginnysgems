@@ -29,3 +29,6 @@ npm-debug.log*
 temp/
 tmp/
 *.temp
+
+# Source emails, reference diagrams, and extracted working assets
+/TemporaryResources/

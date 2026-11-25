@@ -1,0 +1,40 @@
+const {assertClosedPolygons,signedMeshVolume,assertConvexGeometry}=require('./helpers/geometry.cjs');
+const assert=require('node:assert/strict');
+const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
+const root=path.resolve(__dirname,'..');
+const context=vm.createContext({THREE:require(path.join(root,'three.min.js')),document:{querySelector:()=>null}});
+for(const file of ['catalog.js','cut-geometry.js','studio-renderer.js'])vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context);
+const catalog=vm.runInContext('STUDIO_CATALOG',context);
+assert.equal(catalog.length,6);assert.equal(new Set(catalog.map(s=>s.id)).size,6);
+for(const stone of catalog){
+  assert.equal(stone.carats,null);assert.equal(stone.dimensions,null);
+  for(const file of [stone.photo,stone.photoSmall])assert(fs.existsSync(path.join(root,file)),file);
+  if(stone.render){assert(['source-geometry','source-reconstruction'].includes(stone.status));assert(fs.existsSync(path.join(root,stone.render)),stone.render);}
+}
+assert(!catalog.some(s=>s.id==='ruby-001'),'Do not remap the old demo ruby ID');
+const cut=JSON.parse(fs.readFileSync(path.join(root,'data/cuts/sophia-dome.json'),'utf8'));
+const geometry=context.geometryFromCut(cut),faces=geometry.userData.designFacets;
+assert.equal(faces.length,97);
+const counts=faces.reduce((out,face)=>(out[face.label]=(out[face.label]||0)+1,out),{});
+assert.deepEqual(counts,{G1:12,P1:12,P2:12,P3:12,C1:12,C2:12,C3:8,C4:4,C5:4,C6:8,T:1});
+assertClosedPolygons(faces);
+assert(signedMeshVolume(geometry)>0,'Winding must face outward');
+const optical=context.getGemPlanes(geometry);assert.equal(optical.count,97);
+assertConvexGeometry(geometry,optical);
+const peridot=JSON.parse(fs.readFileSync(path.join(root,'data/cuts/peridot-round.json')));
+const peridotGeometry=context.geometryFromCut(peridot);
+assert.equal(peridotGeometry.userData.designFacets.length,73);
+assertClosedPolygons(peridotGeometry.userData.designFacets,{label:'Peridot'});
+const peridotPlanes=context.getGemPlanes(peridotGeometry);assert.equal(peridotPlanes.count,73);
+assertConvexGeometry(peridotGeometry,peridotPlanes,{label:'Peridot'});
+const table=peridotGeometry.userData.designFacets.find(face=>face.label==='T');
+const tableWidth=2*Math.max(...table.vertices.map(([x,,z])=>Math.hypot(x,z)));
+assert(Math.abs(tableWidth-peridot.ratios.tableWidth)<.003,'Peridot table ratio exceeds documented discrepancy');
+const peridotVolume=signedMeshVolume(peridotGeometry);
+assert(Math.abs(peridotVolume-.201)<.001,'Peridot normalized volume');
+context.centerGemGeometry(geometry);
+assert(geometry.boundingSphere.center.length()<1e-6);
+assertConvexGeometry(geometry,context.getGemPlanes(geometry),{label:'Centered geometry'});
+assert.throws(()=>context.geometryFromCut({status:'offsets-required',tiers:[]}),/awaiting verified/);
+assert.throws(()=>context.geometryFromCut({...cut,tiers:Array(257).fill(cut.tiers[10])}),/256/);
+console.log('Passed six catalog records, photo assets, 97 Sophia Dome source facets, closed convex geometry, optical planes, 73 peridot facets, diagram proportions, and pending-cut rejection.');

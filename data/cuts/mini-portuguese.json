@@ -1,0 +1,229 @@
+{
+  "id": "mini-portuguese",
+  "name": "Mini-Portuguese",
+  "sourceTitle": "Mini-Portugese - For small gems",
+  "designer": "Greg Glenn",
+  "source": "Miniportugese.Ruby.pdf",
+  "designIor": 1.74,
+  "indexGear": 96,
+  "facetCount": 113,
+  "ratios": {
+    "lengthWidth": 1,
+    "tableWidth": 0.583,
+    "pavilionWidth": 0.44,
+    "crownWidth": 0.111,
+    "volumeWidthCubed": 0.194
+  },
+  "status": "source-reconstruction",
+  "tiers": [
+    {
+      "label": "P1",
+      "angle": -46,
+      "indices": [
+        3,
+        9,
+        15,
+        21,
+        27,
+        33,
+        39,
+        45,
+        51,
+        57,
+        63,
+        69,
+        75,
+        81,
+        87,
+        93
+      ],
+      "distance": 0.35275894389017387
+    },
+    {
+      "label": "G",
+      "angle": 90,
+      "indices": [
+        3,
+        9,
+        15,
+        21,
+        27,
+        33,
+        39,
+        45,
+        51,
+        57,
+        63,
+        69,
+        75,
+        81,
+        87,
+        93
+      ],
+      "distance": 0.4903926402016152
+    },
+    {
+      "label": "P2",
+      "angle": -43,
+      "indices": [
+        96,
+        6,
+        12,
+        18,
+        24,
+        30,
+        36,
+        42,
+        48,
+        54,
+        60,
+        66,
+        72,
+        78,
+        84,
+        90
+      ],
+      "distance": 0.34090021853568453
+    },
+    {
+      "label": "P3",
+      "angle": -40,
+      "indices": [
+        3,
+        9,
+        15,
+        21,
+        27,
+        33,
+        39,
+        45,
+        51,
+        57,
+        63,
+        69,
+        75,
+        81,
+        87,
+        93
+      ],
+      "distance": 0.33705955497235035
+    },
+    {
+      "label": "C1",
+      "angle": 32,
+      "indices": [
+        3,
+        9,
+        15,
+        21,
+        27,
+        33,
+        39,
+        45,
+        51,
+        57,
+        63,
+        69,
+        75,
+        81,
+        87,
+        93
+      ],
+      "distance": 0.2810317917076057
+    },
+    {
+      "label": "C2",
+      "angle": 28,
+      "indices": [
+        96,
+        6,
+        12,
+        18,
+        24,
+        30,
+        36,
+        42,
+        48,
+        54,
+        60,
+        66,
+        72,
+        78,
+        84,
+        90
+      ],
+      "distance": 0.25674421393184554
+    },
+    {
+      "label": "C3",
+      "angle": 25,
+      "indices": [
+        3,
+        9,
+        15,
+        21,
+        27,
+        33,
+        39,
+        45,
+        51,
+        57,
+        63,
+        69,
+        75,
+        81,
+        87,
+        93
+      ],
+      "distance": 0.2438913759904246
+    },
+    {
+      "label": "T",
+      "angle": 0,
+      "indices": [
+        96
+      ],
+      "distance": 0.13578750805758677
+    }
+  ],
+  "reconstruction": {
+    "method": "PDF angles and ratios with offsets reconstructed from vector drawing; not original GemCAD plane data",
+    "normalizedWidth": 1,
+    "girdleThickness": 0.024955288175876448,
+    "crownHeight": 0.11083221988171033,
+    "crownJunctionRadius": 0.39279512643860004,
+    "crownJunctionHeight": 0.06098569517305674,
+    "crownConstraint": "C1/C2/C3 share the crown junction visible in the drawing; C2/C3 meet the 16-sided table vertices",
+    "pavilionConstraint": "P1 meets the regular girdle; P3 meets at P/W 0.440; P2 offset is a least-squares fit to two profile points",
+    "drawing": {
+      "widthEnds": [
+        586.8,
+        721.44
+      ],
+      "radialCenter": 654,
+      "girdleProfile": [
+        315.60001,
+        318.95999
+      ],
+      "pavilionPoints": [
+        [
+          339.35999,
+          699.35999
+        ],
+        [
+          351.84,
+          685.91998
+        ]
+      ]
+    },
+    "validation": {
+      "volumeWidthCubed": 0.1946408,
+      "printedVolumeWidthCubed": 0.194,
+      "relativeVolumeDifference": 0.0033031,
+      "maximumCheckedProfileErrorPoints": 0.276,
+      "drawingWidthPoints": 134.6400000000001
+    },
+    "limitations": "Vector coordinates are quantized. The reconstruction assumes a regular 16-sided girdle and common design geometry for the ruby and red garnet, as requested. It does not establish stone-specific cutting adjustments."
+  },
+  "note": "Greg Glenn Mini-Portuguese: 113-facet PDF reconstruction. Facet offsets and girdle thickness are derived from the drawing; design IOR 1.740 is separate from material settings. Represents the design, not a scan of either finished stone."
+}

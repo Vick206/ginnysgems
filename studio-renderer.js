@@ -51,6 +51,12 @@ function buildGemHull(coordinates) {
 }
 
 function getGemPlanes(geometry) {
+  if(geometry.userData.opticalPlanes){
+    const planes=geometry.userData.opticalPlanes.map(p=>new THREE.Vector4(...p));const count=planes.length;
+    if(count>256)throw new Error('Gem exceeds the studio renderer facet limit.');
+    while(planes.length<256)planes.push(new THREE.Vector4());
+    return {planes,count};
+  }
   const planes=[];const p=geometry.attributes.position,n=geometry.attributes.normal;
   for(let i=0;i<p.count;i+=3) {
     const normal=new THREE.Vector3().fromBufferAttribute(n,i);
@@ -181,7 +187,7 @@ function createStudioGemMaterial(geometry,cube) {
     toneMapped:true,depthWrite:true,
   });
   // Compatibility with the existing control model; uniforms drive the shader.
-  material.transmission=.92;material.opacity=1;
+  material.opacity=1;
   material.addEventListener('dispose',()=>facetTexture.dispose());
   return material;
 }
@@ -190,6 +196,7 @@ function createStudioGemMaterial(geometry,cube) {
 class StudioPreview {
   constructor(renderer) {
     this.renderer=renderer;this.samples=0;this.signature='';this.width=0;this.height=0;
+    this.drawingSize=new THREE.Vector2();
     const options={minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,depthBuffer:false};
     this.sample=new THREE.WebGLRenderTarget(1,1,{...options,depthBuffer:true});
     this.history=[new THREE.WebGLRenderTarget(1,1,options),new THREE.WebGLRenderTarget(1,1,options)];
@@ -213,7 +220,7 @@ class StudioPreview {
   }
   invalidate() {this.samples=0;this.signature='';}
   render(scene,camera,signature,moving) {
-    const size=this.renderer.getDrawingBufferSize(new THREE.Vector2());
+    const size=this.renderer.getDrawingBufferSize(this.drawingSize);
     const scale=moving ? .65 : 1;
     const width=Math.max(1,Math.round(size.x*scale)),height=Math.max(1,Math.round(size.y*scale));
     if(width!==this.width || height!==this.height) {
@@ -227,6 +234,12 @@ class StudioPreview {
     if(!moving)camera.setViewOffset(this.width,this.height,halton(this.samples+1,2)-.5,halton(this.samples+1,3)-.5,this.width,this.height);
     try {
       this.renderer.setRenderTarget(this.sample);this.renderer.render(scene,camera);
+      // A moving frame has no history to accumulate; present the sample directly.
+      if(moving){
+        this.material.uniforms.current.value=this.sample.texture;this.material.uniforms.weight.value=1;
+        this.renderer.setRenderTarget(null);this.renderer.render(this.scene,this.camera);
+        this.samples=0;return;
+      }
       const output=this.history[this.samples%2],previous=this.history[(this.samples+1)%2];
       const uniforms=this.material.uniforms;
       uniforms.current.value=this.sample.texture;uniforms.previous.value=previous.texture;uniforms.weight.value=1/(this.samples+1);

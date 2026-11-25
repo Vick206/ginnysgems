@@ -1,34 +1,9 @@
-// Parametric previews with illustrative geometric rays, not a GemCAD parser.
-const GEM_MATERIALS = {
-  diamond: { label: 'Diamond', color: 0xf5ead1, ior: 2.417, dispersion: .044 },
-  sapphire: { label: 'Blue Sapphire', color: 0x356bdd, ior: 1.766 },
-  ruby: { label: 'Ruby', color: 0xc72346, ior: 1.766 },
-  emerald: { label: 'Emerald', color: 0x219b68, ior: 1.576 },
-  topaz: { label: 'Imperial Topaz', color: 0xe8a441, ior: 1.62 },
-  aquamarine: { label: 'Aquamarine', color: 0x72cfde, ior: 1.577 },
-};
-const STONES = {
-  'emerald-001': { material: 'emerald', cut: 'radiant', carats: 12.4 },
-  'sapphire-001': { material: 'sapphire', cut: 'cushion', carats: 8.7 },
-  'diamond-001': { material: 'diamond', cut: 'oval', carats: 5.2 },
-  'ruby-001': { material: 'ruby', cut: 'oval', carats: 3.5 },
-  'topaz-001': { material: 'topaz', cut: 'brilliant', carats: 9.1 },
-  'aquamarine-001': { material: 'aquamarine', cut: 'emerald', carats: 15.3 },
-};
-const PARAMS = {
-  brilliant: [ ['crownAngle', 'Crown angle', 25, 45, 1, 34], ['pavilionAngle', 'Pavilion angle', 35, 50, 0.1, 40.8], ['facets', 'Outline segments', 8, 32, 4, 16] ],
-  emerald: [['facetsPerSide', 'Steps per side', 2, 6, 1, 3]],
-  asscher: [['facetsPerSide', 'Steps per side', 2, 6, 1, 4]],
-  radiant: [['facetRings', 'Facet rings', 2, 6, 1, 3]],
-  cushion: [['facetsPerSide', 'Outline detail', 3, 8, 1, 4]],
-  oval: [['lengthRatio', 'Length ratio', 1.1, 2, 0.1, 1.4]],
-  marquise: [['lengthRatio', 'Length ratio', 1.5, 2.5, 0.1, 2]],
-  pear: [['lengthRatio', 'Length ratio', 1.2, 2, 0.1, 1.5]],
-};
+// Studio cut renderer. Optional legacy compatibility lives in legacy/.
+const GEM_MATERIALS = {}; // Populated from the selected studio stone.
 const LIGHTING_PRESETS = {
-  studio: { ambient: .22, key: 1.2, fill: .3, rim: .7, exposure: .9, keyColor: 0xffffff, fillColor: 0xffffff },
-  daylight: { ambient: .45, key: .95, fill: .5, rim: .35, exposure: .95, keyColor: 0xfff5e8, fillColor: 0xe8f1ff },
-  contrast: { ambient: .08, key: 1.5, fill: .08, rim: .85, exposure: .85, keyColor: 0xffffff, fillColor: 0xffffff },
+  studio: { exposure: .9 },
+  daylight: { exposure: .95 },
+  contrast: { exposure: .85 },
 };
 
 // Normal points against the incoming direction; null means total internal reflection.
@@ -40,74 +15,13 @@ function refractRay(direction, normal, ratio) {
     .addScaledVector(normal,ratio*cosine-Math.sqrt(discriminant)).normalize();
 }
 
-class GeometryGenerator {
-  static generate(cut, params) {
-    const stepCut = ['emerald', 'asscher', 'radiant'].includes(cut);
-    const count = stepCut ? 8 : cut === 'cushion' ? params.facetsPerSide * 4 : (params.facets || 16);
-    const outline = [];
-    for (let i = 0; i < count; i++) {
-      const angle = i * Math.PI * 2 / count;
-      let x = Math.cos(angle), z = Math.sin(angle);
-      if (stepCut) {
-        const corners = [[1,.7],[.7,1],[-.7,1],[-1,.7],[-1,-.7],[-.7,-1],[.7,-1],[1,-.7]];
-        [x,z] = corners[i];
-        if (cut === 'emerald') z *= 1.45;
-      } else if (cut === 'cushion') {
-        x = Math.sign(x) * Math.pow(Math.abs(x), .5);
-        z = Math.sign(z) * Math.pow(Math.abs(z), .5);
-      } else if (cut === 'oval') z *= params.lengthRatio;
-      else if (cut === 'marquise') {
-        x *= Math.abs(Math.cos(angle));
-        z *= params.lengthRatio;
-      } else if (cut === 'pear') {
-        x *= (1 - .55 * z);
-        z *= params.lengthRatio;
-      }
-      outline.push([x,z]);
-    }
-    const table = .55;
-    const crown = (1 - table) * Math.tan((params.crownAngle || 34) * Math.PI / 180);
-    const pavilion = Math.tan((params.pavilionAngle || 40.8) * Math.PI / 180);
-    const rings = [[table,crown]];
-    const steps = stepCut ? (params.facetsPerSide || params.facetRings || 3) : 1;
-    for (let i=1; i<steps; i++) {
-      const t=i/steps;
-      rings.push([table+(1-table)*t, crown*Math.pow(1-t,.8)]);
-    }
-    rings.push([1,0], [1,-.035]);
-    for (let i=1; i<steps; i++) {
-      const t=i/steps;
-      rings.push([1-t,-.035-pavilion*Math.pow(t,.8)]);
-    }
-    rings.push([.015,-.035-pavilion]);
-    const vertices=[];
-    const addRing=(scale,y,stride=1,offset=0)=>{
-      for(let i=0;i<count;i+=stride) {
-        const [x,z]=outline[(i+offset)%count];
-        vertices.push(x*scale,y,z*scale);
-      }
-    };
-    if(stepCut) for(const [scale,y] of rings)addRing(scale,y);
-    else {
-      // Alternating crown and pavilion tiers produce actual star/main facets.
-      addRing(table,crown,2);
-      addRing(.78,crown*.56,2,1);
-      addRing(1,0);
-      addRing(1,-.035);
-      addRing(.52,-.035-pavilion*.56,2,1);
-      addRing(.008,-.035-pavilion,2);
-    }
-    return buildGemHull(vertices);
-  }
-}
-
 class GemVisualizer {
-  constructor(canvas) {
+  constructor(canvas, sourceStone=null, sourceCut=null) {
+    if(!sourceCut&&typeof this.setCut!=='function')throw new Error('A cut design is required; load the legacy adapter for demo cuts.');
     this.canvas=canvas;
-    this.currentCut='brilliant';
-    this.currentMaterial='diamond';
-    this.currentStone='';
-    this.rotationSpeed=0;
+    this.setSource(sourceStone,sourceCut);
+    this.setAutoRotation(sourceStone && document.querySelector('#auto-rotate')?.checked);
+    this.internalBounces=10;
     this.transparency=.92;
     this.brilliance=.65;
     this.refractionStrength=1;
@@ -115,8 +29,13 @@ class GemVisualizer {
     this.scene=new THREE.Scene();
     this.scene.background=null;
     this.camera=new THREE.PerspectiveCamera(35,1,.1,100);
-    this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+    // Geometry renders to sampled offscreen targets; canvas MSAA adds no edge AA.
+    this.renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:true});
+    this.viewportSize=new THREE.Vector2();
+    this.inverseGemWorld=new THREE.Matrix4();
+    this.lightDirection=new THREE.Vector3();
     if(!this.renderer.capabilities.isWebGL2 && !this.renderer.extensions.get('OES_texture_float')) {
+      this.renderer.dispose();this.renderer.forceContextLoss();
       throw new Error('The studio renderer requires floating-point texture support.');
     }
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1,2));
@@ -127,15 +46,10 @@ class GemVisualizer {
     this.brightness=1;
     this.lightRig=new THREE.Group();
     this.scene.add(this.lightRig);
-    this.ambientLight=new THREE.HemisphereLight(0xffffff,0x303038,0);
-    this.scene.add(this.ambientLight);
-    this.lights=[];
-    for(const position of [[-3,4,4],[4,-2,3],[2,3,-4]]) {
-      const light=new THREE.DirectionalLight(0xffffff,0);
-      light.position.set(...position);
-      this.lightRig.add(light);
-      this.lights.push(light);
-    }
+    // The custom optical shader uses the cubemap, not Three.js scene lights.
+    // Keep one transform for the key direction used by rays and surface shading.
+    const key=new THREE.Object3D();key.position.set(-3,4,4);
+    this.lightRig.add(key);this.lights=[key];
     this.updateLighting();
     this.group=new THREE.Group();
     this.scene.add(this.group);
@@ -153,22 +67,26 @@ class GemVisualizer {
     this.rays.visible=false;
     this.scene.add(this.rays);
     this.rayGlow=new RayGlow(this.scene);
-    this.setCut(this.currentCut);
+    if(this.sourceCut){this.generateGem();this.resetView();}
+    else this.setCut(this.currentCut);
     this.setupControls();
     this.resizeObserver=new ResizeObserver(()=>this.resize());
     this.resizeObserver.observe(canvas.parentElement);
     this.resize();
     this.studioPreview=new StudioPreview(this.renderer);
     this.lastTime=null;
+    this.active=true;this.inViewport=true;this.animation=null;
     this.animate=(time)=>{
-      const dt=this.lastTime===null ? 0 : Math.min((time-this.lastTime)/1000,.1);
+      this.animation=null;
+      if(!this.active||!this.inViewport||document.visibilityState==='hidden')return;
+      const dt=this.lastTime===null ? 0 : Math.max(0,(time-this.lastTime)/1000);
       this.lastTime=time;
       this.group.rotation.y+=dt*this.rotationSpeed/100;
       const effectTime=this.reducedMotion.matches ? 0 : time/1000;
       this.rayGlow.material.uniforms.time.value=effectTime;
-      if(this.glints) {
+      if(this.glints?.visible) {
         this.glints.material.uniforms.time.value=effectTime;
-        this.glints.material.uniforms.lightDirection.value.copy(this.lights[0].getWorldPosition(new THREE.Vector3())).normalize();
+        this.glints.material.uniforms.lightDirection.value.copy(this.lights[0].getWorldPosition(this.lightDirection)).normalize();
       }
       if(this.rays.visible && (this.lastRayTime===undefined || time-this.lastRayTime>=33)) {
         this.updateRays();
@@ -181,7 +99,45 @@ class GemVisualizer {
       this.studioPreview.render(this.scene,this.camera,signature,moving);
       this.animation=requestAnimationFrame(this.animate);
     };
-    this.animation=requestAnimationFrame(this.animate);
+    this.onVisibilityChange=()=>this.syncAnimation();
+    document.addEventListener('visibilitychange',this.onVisibilityChange);
+    if(sourceStone&&!new URLSearchParams(location.search).has('bake')&&typeof IntersectionObserver!=='undefined'){
+      this.visibilityObserver=new IntersectionObserver(entries=>{this.inViewport=entries[0].isIntersecting;this.syncAnimation();});
+      this.visibilityObserver.observe(canvas);
+    }
+    this.syncAnimation();
+  }
+  syncAnimation(){
+    if(this.active&&this.inViewport&&document.visibilityState!=='hidden'){
+      if(this.animation===null)this.animation=requestAnimationFrame(this.animate);
+    }else{
+      if(this.animation!==null)cancelAnimationFrame(this.animation);
+      this.animation=null;this.lastTime=null;
+    }
+  }
+  suspend(){this.active=false;this.syncAnimation();}
+  resume(){this.active=true;this.lastTime=null;this.syncAnimation();}
+  setSource(stone,cut){
+    this.sourceStone=stone;this.sourceCut=cut;
+    this.currentCut=cut ? cut.id : 'brilliant';this.currentMaterial=stone ? stone.material : 'diamond';this.currentStone=stone ? stone.id : '';
+    if(stone)GEM_MATERIALS[stone.material]={label:stone.name,color:stone.color,ior:stone.ior};
+  }
+  useStone(stone,cut){
+    const sameCut=this.gem&&this.sourceCut?.id===cut.id;
+    const previousStone=this.sourceStone,previousCut=this.sourceCut;
+    this.setSource(stone,cut);
+    try{
+      if(sameCut){this.updateOptics();this.updateInfo();}else this.generateGem();
+    }catch(error){
+      this.setSource(previousStone,previousCut);
+      throw error;
+    }
+    this.resetView();
+  }
+  setAutoRotation(enabled){this.rotationSpeed=enabled ? 100*2*Math.PI/40 : 0;}
+  setZoom(value){
+    this.zoom=THREE.MathUtils.clamp(value,.55,2.5);
+    this.camera.position.z=this.fitDistance*this.zoom;
   }
   createEnvironment() {
     // An asymmetric studio: broad key softbox, narrow fill, rim, and overhead card.
@@ -220,30 +176,23 @@ class GemVisualizer {
     });
     const cube=new THREE.CubeTexture(faces);cube.encoding=THREE.sRGBEncoding;cube.needsUpdate=true;
     cube.generateMipmaps=true;cube.minFilter=THREE.LinearMipmapLinearFilter;
-    this.scene.environment=cube;
     this.studioCube=cube;
   }
   resize() {
     const {width,height}=this.canvas.parentElement.getBoundingClientRect();
     if(!width || !height) return;
-    this.renderer.setSize(width,height,false);
+    const size=this.renderer.getSize(this.viewportSize);
+    if(size.x!==width||size.y!==height)this.renderer.setSize(width,height,false);
     this.camera.aspect=width/height;
     this.camera.updateProjectionMatrix();
     const framing=this.rays?.visible ? 1.95 : 1.15;
     this.fitDistance=Math.max(4, this.radius/Math.sin(THREE.MathUtils.degToRad(17.5))*framing/Math.min(1,this.camera.aspect));
-    this.camera.position.z=this.fitDistance*(this.zoom || 1);
+    this.setZoom(this.zoom || 1);
     if(this.rayGlow) this.rayGlow.material.uniforms.resolution.value.set(width,height);
   }
   updateLighting() {
     const preset=LIGHTING_PRESETS[this.lightingPreset];
     this.renderer.toneMappingExposure=preset.exposure;
-    this.ambientLight.intensity=preset.ambient*this.brightness;
-    const intensities=[preset.key,preset.fill,preset.rim];
-    const colors=[preset.keyColor,preset.fillColor,0xffffff];
-    this.lights.forEach((light,i)=>{
-      light.intensity=intensities[i]*this.brightness;
-      light.color.setHex(colors[i]).convertSRGBToLinear();
-    });
     if(this.gem) this.updateOptics();
     if(this.rays) {
       this.rays.material.opacity=.18*Math.min(this.brightness,1);
@@ -271,35 +220,19 @@ class GemVisualizer {
     this.canvas.addEventListener('lostpointercapture',stop);
     this.canvas.addEventListener('wheel',e=>{
       e.preventDefault();
-      this.zoom=THREE.MathUtils.clamp((this.zoom || 1)*Math.exp(e.deltaY*.001),.55,2.5);
-      this.camera.position.z=this.fitDistance*this.zoom;
+      this.setZoom((this.zoom || 1)*Math.exp(e.deltaY*.001));
     },{passive:false});
   }
-  setCut(cut) {
-    this.currentCut=cut;
-    this.currentParams=Object.fromEntries(PARAMS[cut].map(p=>[p[0],p[5]]));
-    document.querySelector('#cut-select').value=cut;
-    const container=document.querySelector('#params-container');
-    container.innerHTML=PARAMS[cut].map(([key,label,min,max,step,value])=>`<div class="control-group"><label for="param-${key}">${label}</label><input id="param-${key}" type="range" min="${min}" max="${max}" step="${step}" value="${value}" data-param="${key}"><output for="param-${key}">${value}</output></div>`).join('');
-    container.querySelectorAll('input').forEach(input=>input.addEventListener('input',()=>{
-      this.currentParams[input.dataset.param]=Number(input.value);
-      input.nextElementSibling.textContent=input.value;
-      this.generateGem();
-    }));
-    this.generateGem();
-    this.resetView();
-  }
   generateGem() {
+    // Validate/build the replacement before disposing the last usable mesh.
+    const geometry=this.sourceCut ? geometryFromCut(this.sourceCut) : this.generateLegacyGeometry();
+    centerGemGeometry(geometry);
     while(this.group.children.length) {
       const child=this.group.children[0];
       this.group.remove(child);
       child.geometry.dispose();
       child.material.dispose();
     }
-    const geometry=GeometryGenerator.generate(this.currentCut,this.currentParams);
-    const center=geometry.boundingSphere.center.clone();
-    geometry.translate(-center.x,-center.y,-center.z);
-    geometry.computeBoundingSphere();
     this.radius=geometry.boundingSphere.radius;
     this.gem=new THREE.Mesh(geometry,createStudioGemMaterial(geometry,this.studioCube));
     this.opticalMesh=new THREE.Mesh(geometry,this.opticalMaterial);
@@ -325,7 +258,6 @@ class GemVisualizer {
     this.resize();
   }
   updateTransparency() {
-    this.gem.material.transmission=this.transparency;
     this.updateOptics();
   }
   prepareStudioFrame() {
@@ -333,8 +265,8 @@ class GemVisualizer {
     this.scene.updateMatrixWorld(true);
     const uniforms=this.gem.material.uniforms;
     uniforms.gemWorld.value.copy(this.gem.matrixWorld);
-    uniforms.localCamera.value.copy(this.camera.position).applyMatrix4(this.gem.matrixWorld.clone().invert());
-    uniforms.lightDirection.value.copy(this.lights[0].getWorldPosition(new THREE.Vector3())).normalize();
+    uniforms.localCamera.value.copy(this.camera.position).applyMatrix4(this.inverseGemWorld.copy(this.gem.matrixWorld).invert());
+    uniforms.lightDirection.value.copy(this.lights[0].getWorldPosition(this.lightDirection)).normalize();
   }
   updateOptics() {
     if(!this.gem) return;
@@ -352,7 +284,7 @@ class GemVisualizer {
     // Beer-Lambert absorption is scaled to the preview's arbitrary model units.
     const density=this.currentMaterial==='diamond' ? .18 : .42;
     uniforms.absorption.value.set(-Math.log(Math.max(color.r,.015))*density,-Math.log(Math.max(color.g,.015))*density,-Math.log(Math.max(color.b,.015))*density);
-    uniforms.bounceLimit.value=Number(document.querySelector('#render-quality')?.value || 8);
+    uniforms.bounceLimit.value=Number(document.querySelector('#render-quality')?.value || this.internalBounces);
     uniforms.dispersion.value=document.querySelector('#show-dispersion')?.checked ? (properties.dispersion || .018) : 0;
     uniforms.studioRotation.value=this.lightRig.rotation.y;
     uniforms.studioMode.value=['studio','daylight','contrast'].indexOf(this.lightingPreset);
@@ -423,83 +355,18 @@ class GemVisualizer {
     this.rayGlow.update(this.rayPositions,this.rayColors,cursor/3);
   }
   resetView() {
-    this.zoom=1;
-    this.group.rotation.set(1.05, .35, 0);
+    this.zoom=this.sourceCut ? .55 : 1;
+    this.group.rotation.set(this.sourceCut ? 0 : 1.05, .35, 0);
     this.resize();
     this.updateRays();
   }
-  selectStone(id) {
-    const stone=STONES[id];
-    this.currentStone=stone ? id : '';
-    this.currentMaterial=stone ? stone.material : 'diamond';
-    document.querySelector('#gem-select').value=this.currentStone;
-    this.setCut(stone ? stone.cut : 'brilliant');
-  }
   updateInfo() {
-    const stone=STONES[this.currentStone];
-    document.querySelector('#stone-info').textContent=`${GEM_MATERIALS[this.currentMaterial].label}${stone ? ` · ${stone.carats} ct` : ''} · ${this.currentCut} preview. Parametric illustration; not measured stone geometry.${this.currentStone==='topaz-001' ? ' Fantasy cut data is unavailable; showing a brilliant preview.' : ''}`;
-    document.querySelector('#facet-data').textContent=`${this.gem.geometry.attributes.position.count/3} mesh triangles. ${Object.entries(this.currentParams).map(([key,value])=>`${key}: ${value}`).join(' · ')}. Triangles are not a GemCAD facet count.`;
-  }
-}
-
-function initVisualizer() {
-  const loading=document.querySelector('#loading');
-  try {
-    if(typeof THREE==='undefined') throw new Error('Three.js failed to load.');
-    const visualizer=new GemVisualizer(document.querySelector('#gem-canvas'));
-    // Expose the preview for inspection in browser DevTools.
-    window.gemVisualizer=visualizer;
-    document.querySelector('#cut-select').addEventListener('change',e=>visualizer.setCut(e.target.value));
-    document.querySelector('#gem-select').addEventListener('change',e=>visualizer.selectStone(e.target.value));
-    for(const id of ['show-facets','show-wireframe','show-light-rays','show-glints']) document.querySelector(`#${id}`).addEventListener('change',()=>visualizer.updateDisplay());
-    document.querySelector('#transparency').addEventListener('input',e=>{
-      const value=Number(e.target.value);
-      document.querySelector('#transparency-value').textContent=value;
-      visualizer.transparency=value/100;
-      visualizer.updateTransparency();
-    });
-    for(const [id,property] of [['brilliance','brilliance'],['refraction','refractionStrength']]) {
-      document.querySelector(`#${id}`).addEventListener('input',e=>{
-        const value=Number(e.target.value);
-        document.querySelector(`#${id}-value`).textContent=value;
-        visualizer[property]=value/100;
-        visualizer.updateOptics();
-        visualizer.updateRays();
-      });
+    if(this.sourceStone){
+      const cut=this.sourceCut;
+      document.querySelector('#stone-info').textContent=`${cut.designer ? 'Designer: '+cut.designer : 'Design: '+cut.sourceTitle} | Material IOR: ${this.sourceStone.ior} | Design IOR: ${cut.designIor}`;
+      document.querySelector('#facet-data').textContent=`${this.gem.geometry.userData.designFacets.length} facets | ${cut.indexGear}-index design`;
+      return;
     }
-    document.querySelector('#brightness').addEventListener('input',e=>{
-      const value=Number(e.target.value);
-      document.querySelector('#brightness-value').textContent=value;
-      visualizer.brightness=value/100;
-      visualizer.updateLighting();
-    });
-    document.querySelector('#lighting-preset').addEventListener('change',e=>{
-      visualizer.lightingPreset=e.target.value;
-      visualizer.updateLighting();
-    });
-    document.querySelector('#light-direction').addEventListener('input',e=>{
-      const angle=Number(e.target.value);
-      document.querySelector('#light-direction-value').textContent=angle;
-      visualizer.lightRig.rotation.y=THREE.MathUtils.degToRad(angle);
-      visualizer.updateOptics();
-      visualizer.updateRays();
-    });
-    for(const id of ['render-quality','show-dispersion']) document.querySelector('#'+id).addEventListener('change',()=>visualizer.updateOptics());
-    document.querySelector('#rotation-speed').addEventListener('input',e=>{visualizer.rotationSpeed=Number(e.target.value);});
-    document.querySelector('#reset-view').addEventListener('click',()=>visualizer.resetView());
-    document.querySelector('#download-data').addEventListener('click',()=>{
-      const data={cut:visualizer.currentCut,material:visualizer.currentMaterial,parameters:visualizer.currentParams,preview:true};
-      const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
-      const a=document.createElement('a'); a.href=url; a.download=`gem-${visualizer.currentCut}.json`; a.click();
-      setTimeout(()=>URL.revokeObjectURL(url),1000);
-    });
-    const id=new URLSearchParams(window.location.search).get('stone');
-    if(STONES[id]) visualizer.selectStone(id);
-    loading.style.display='none';
-  } catch(error) {
-    console.error(error);
-    loading.textContent=`Unable to start the visualizer: ${error.message} Try a browser with WebGL enabled.`;
+    this.updateLegacyInfo();
   }
 }
-if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initVisualizer);
-else initVisualizer();

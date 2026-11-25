@@ -1,0 +1,197 @@
+{
+  "id": "sophia-dome",
+  "name": "Sophia Dome",
+  "source": "pc45144.asc",
+  "sourceTitle": "PC 45.144 Sophia Dome",
+  "designIor": 1.65,
+  "indexGear": 96,
+  "offsets": "source plane distances",
+  "status": "source-geometry",
+  "tiers": [
+    {
+      "label": "G1",
+      "angle": 90,
+      "distance": 1.11111111,
+      "indices": [
+        96,
+        88,
+        80,
+        72,
+        64,
+        56,
+        48,
+        40,
+        32,
+        24,
+        16,
+        8
+      ],
+      "instruction": "Set stone size"
+    },
+    {
+      "label": "P1",
+      "angle": -46.00032,
+      "distance": 0.63108915,
+      "indices": [
+        96,
+        88,
+        80,
+        72,
+        64,
+        56,
+        48,
+        40,
+        32,
+        24,
+        16,
+        8
+      ],
+      "instruction": "TCP"
+    },
+    {
+      "label": "P2",
+      "angle": -42.504585,
+      "distance": 0.59795096,
+      "indices": [
+        92,
+        84,
+        76,
+        68,
+        60,
+        52,
+        44,
+        36,
+        28,
+        20,
+        12,
+        4
+      ],
+      "instruction": "TCP"
+    },
+    {
+      "label": "P3",
+      "angle": -39.497593,
+      "distance": 0.59542113,
+      "indices": [
+        96,
+        88,
+        80,
+        72,
+        64,
+        56,
+        48,
+        40,
+        32,
+        24,
+        16,
+        8
+      ],
+      "instruction": "PCP"
+    },
+    {
+      "label": "C1",
+      "angle": 50.99514,
+      "distance": 1.04134629,
+      "indices": [
+        96,
+        8,
+        16,
+        24,
+        32,
+        40,
+        48,
+        56,
+        64,
+        72,
+        80,
+        88
+      ],
+      "instruction": "Set Girdle thickness"
+    },
+    {
+      "label": "C2",
+      "angle": 40.696616,
+      "distance": 0.96559774,
+      "indices": [
+        4,
+        12,
+        20,
+        28,
+        36,
+        44,
+        52,
+        60,
+        68,
+        76,
+        84,
+        92
+      ],
+      "instruction": "Mains"
+    },
+    {
+      "label": "C3",
+      "angle": 30.598246,
+      "distance": 0.89805473,
+      "indices": [
+        6,
+        18,
+        30,
+        42,
+        54,
+        66,
+        78,
+        90
+      ],
+      "instruction": "Meet C1"
+    },
+    {
+      "label": "C4",
+      "angle": 22.596146,
+      "distance": 0.86590759,
+      "indices": [
+        96,
+        24,
+        48,
+        72
+      ],
+      "instruction": "Meet C2-C3"
+    },
+    {
+      "label": "C5",
+      "angle": 21.496553,
+      "distance": 0.86648285,
+      "indices": [
+        12,
+        36,
+        60,
+        84
+      ],
+      "instruction": "Meet C2"
+    },
+    {
+      "label": "C6",
+      "angle": 10.002206,
+      "distance": 0.82383487,
+      "indices": [
+        6,
+        18,
+        30,
+        42,
+        54,
+        66,
+        78,
+        90
+      ],
+      "instruction": "Meet C3"
+    },
+    {
+      "label": "T",
+      "angle": 0,
+      "distance": 0.77161942,
+      "indices": [
+        96
+      ],
+      "instruction": ""
+    }
+  ]
+}
